@@ -112,6 +112,35 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+			 <plugin>
+                        <groupId>com.github.cukedoctor</groupId>
+                        <artifactId>cukedoctor-maven-plugin</artifactId>
+                        <version>0.9.2-SNAPSHOT</version>
+                        <configuration>
+                            <outputFileName>cukedoctor-documentation</outputFileName>
+                            <documentTitle>Cukedoctor Documentation</documentTitle>
+                            <featuresDir>target/cukedoctor</featuresDir>
+                            <outputDir>cukedoctor</outputDir>
+                            <format>all</format>
+                            <toc>center</toc>
+                            <numbered>true</numbered>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <phase>install</phase>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jruby</groupId>
+                                <artifactId>jruby-complete</artifactId>
+                                <version>9.0.4.0</version>
+                             </dependency>
+                        </dependencies>
+                    </plugin>
         </plugins>
 
     </build>
