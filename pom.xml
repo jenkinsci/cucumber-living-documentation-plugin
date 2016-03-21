@@ -107,6 +107,16 @@
                 </configuration>
             </plugin>
         </plugins>
+
     </build>
+
+    <repositories>
+        <repository>
+            <snapshots/>
+            <id>snapshots</id>
+            <name>libs-snapshot</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
 
 </project>
