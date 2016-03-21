@@ -67,13 +67,13 @@ public class CukedoctorPublisher extends Recorder {
 
     private String featuresDir;
 
-    private boolean numbered;
+    private final boolean numbered;
 
-    private boolean sectAnchors ;
+    private final boolean sectAnchors ;
 
-    private TocType toc;
+    private final TocType toc;
 
-    private FormatType format;
+    private final FormatType format;
 
     private String title;
 
@@ -99,10 +99,13 @@ public class CukedoctorPublisher extends Recorder {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException {
 
+        String comutedFeaturesDir;
         if (!hasText(featuresDir)) {
-            featuresDir = build.getWorkspace().getRemote();
+            comutedFeaturesDir = build.getWorkspace().getRemote();
         } else{
-            featuresDir = (build.getWorkspace().getRemote() + "/"+featuresDir).replaceAll("//","/");
+            comutedFeaturesDir = (build.getWorkspace().getRemote() +System.getProperty("file.separator")+featuresDir).
+                //remove double slashes
+                replaceAll((System.getProperty("file.separator")+System.getProperty("file.separator")),System.getProperty("file.separator"));
         }
 
         List<Feature> features = FeatureParser.findAndParse(featuresDir);
@@ -111,17 +114,10 @@ public class CukedoctorPublisher extends Recorder {
                 title = "Living Documentation";
             }
 
-            if(format == null){
-                format = FormatType.ALL;
-            }
-
-            if(toc == null){
-                toc = TocType.RIGHT;
-            }
 
             listener.getLogger().println("Found " + features.size() + " feature(s).");
             listener.getLogger().println("Generating living documentation with the following arguments: ");
-            listener.getLogger().println("Features dir: " + featuresDir);
+            listener.getLogger().println("Features dir: " + comutedFeaturesDir);
             listener.getLogger().println("Format: " + format.getFormat());
             listener.getLogger().println("Toc: " + toc.getToc());
             listener.getLogger().println("Title: " + title);
