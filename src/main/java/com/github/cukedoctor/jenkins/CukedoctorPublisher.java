@@ -69,7 +69,7 @@ public class CukedoctorPublisher extends Recorder {
 
     private boolean numbered;
 
-    private boolean sectAnchors;
+    private boolean sectAnchors ;
 
     private TocType toc;
 
@@ -79,19 +79,16 @@ public class CukedoctorPublisher extends Recorder {
 
 
     @DataBoundConstructor
-    public CukedoctorPublisher(String featuresDir, FormatType format, TocType toc, boolean numbered, boolean sectAnchors, String titile) {
+    public CukedoctorPublisher(String featuresDir, FormatType format, TocType toc, boolean numbered, boolean sectAnchors, String title) {
         this.featuresDir = featuresDir;
         this.numbered = numbered;
         this.toc = toc;
         this.format = format;
         this.sectAnchors = sectAnchors;
-        this.title = titile;
+        this.title = title;
     }
 
-    @Override
-    public BuildStepDescriptor getDescriptor() {
-        return (DescriptorImpl) super.getDescriptor();
-    }
+
 
     @Override
     public Action getProjectAction(AbstractProject<?, ?> project) {
@@ -153,11 +150,11 @@ public class CukedoctorPublisher extends Recorder {
             String outputPath = targetBuildDirectory.getAbsolutePath();
             if("all".equals(format.getFormat())){
                 documentAttributes.backend("html5");
-                this.execute(features, documentAttributes,outputPath);
+                execute(features, documentAttributes, outputPath);
                 documentAttributes.backend("pdf");
-                this.execute(features, documentAttributes,outputPath);
+                execute(features, documentAttributes, outputPath);
             }else{
-                this.execute(features,documentAttributes,outputPath);
+                execute(features, documentAttributes, outputPath);
             }
 
         } else {
@@ -190,9 +187,9 @@ public class CukedoctorPublisher extends Recorder {
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
-        public DescriptorImpl() {
-            load();
-        }
+      /*  public DescriptorImpl() {
+             load();
+        }*/
 
         @Override
         public String getHelpFile() {
@@ -205,11 +202,6 @@ public class CukedoctorPublisher extends Recorder {
             return true;
         }
 
-        public FormValidation doCheck(@AncestorInPath AbstractProject project,
-                                      @QueryParameter String value) throws IOException, ServletException {
-            FilePath ws = project.getSomeWorkspace();
-            return ws != null ? ws.validateRelativeDirectory(value) : FormValidation.ok();
-        }
 
         /**
          * This human readable name is used in the configuration screen.
@@ -234,14 +226,34 @@ public class CukedoctorPublisher extends Recorder {
             return items;
         }
 
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            req.bindJSON(this, formData);
-            save();
-            //return super.configure(req,formData);
-            return true;
-        }
 
     }
+
+
+    public String getFeaturesDir() {
+        return featuresDir;
+    }
+
+    public boolean isNumbered() {
+        return numbered;
+    }
+
+    public boolean isSectAnchors() {
+        return sectAnchors;
+    }
+
+    public TocType getToc() {
+        return toc;
+    }
+
+    public FormatType getFormat() {
+        return format;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+
 }
 
