@@ -5,7 +5,7 @@
  
 
 
-BDD living documentation on your jenkins build via Cukedoctor[https://github.com/rmpestano/cukedoctor^]. 
+BDD living documentation on your jenkins build via https://github.com/rmpestano/cukedoctor[Cukedoctor^]. 
 
 
 For more information access plugin wiki here: https://wiki.jenkins-ci.org/display/JENKINS/living-documentation-plugin. 

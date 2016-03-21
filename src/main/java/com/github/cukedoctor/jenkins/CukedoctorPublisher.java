@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 pestano.
+ * Copyright 2016 rmpestano.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -114,16 +114,25 @@ public class CukedoctorPublisher extends Recorder {
                 title = "Living Documentation";
             }
 
+            if(format == null){
+                format = FormatType.ALL;
+            }
+
+            if(toc == null){
+                toc = TocType.RIGHT;
+            }
+
             listener.getLogger().println("Found " + features.size() + " feature(s).");
-            listener.getLogger().println("Generating living documentation with following arguments: ");
+            listener.getLogger().println("Generating living documentation with the following arguments: ");
             listener.getLogger().println("Features dir: " + featuresDir);
             listener.getLogger().println("Format: " + format.getFormat());
             listener.getLogger().println("Toc: " + toc.getToc());
             listener.getLogger().println("Title: " + title);
             listener.getLogger().println("Numbered: " + Boolean.toString(numbered));
             listener.getLogger().println("Section anchors: " + Boolean.toString(sectAnchors));
+            listener.getLogger().println("");
 
-            File targetBuildDirectory = new File(build.getRootDir(), "living-documentation");
+            File targetBuildDirectory = new File(build.getWorkspace().getRemote(), "living-documentation");
             if (!targetBuildDirectory.exists()) {
                 targetBuildDirectory.mkdirs();
             }
@@ -235,3 +244,4 @@ public class CukedoctorPublisher extends Recorder {
 
     }
 }
+
