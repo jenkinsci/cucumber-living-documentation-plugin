@@ -1,0 +1,16 @@
+<j:jelly xmlns:j="jelly:core" >
+	<j:if test="${action.showSidebarPanel()}">
+
+		<div style="text-align: center;">
+			<h2>Project living documentation</h2>
+		    <ul>
+		          <li>
+              	  	    <a href="../${action.job()}/living-documentation/documentation.html" target="_blank">HTML</a>
+                  </li>
+              	  <li>
+					    <a href="../${action.job()}/living-documentation/documentation.pdf" target="_blank">PDF</a>
+                  </li>
+		    </ul>
+		</div>
+	</j:if>
+</j:jelly>

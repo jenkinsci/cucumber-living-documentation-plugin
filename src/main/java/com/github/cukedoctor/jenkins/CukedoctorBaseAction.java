@@ -14,7 +14,11 @@ import hudson.model.DirectoryBrowserSupport;
 
 public abstract class CukedoctorBaseAction implements Action {
 
-    private String documentationPage = "documentation.html";
+    protected static final String HTML_DOCUMENTATION = "documentation.html";
+    protected static final String PDF_DOCUMENTATION = "documentation.pdf";
+    protected static final String ALL_DOCUMENTATION = "all.html";
+
+    protected String documentationPage = "documentation.html";
 
     protected static final String BASE_URL = "living-documentation";
 

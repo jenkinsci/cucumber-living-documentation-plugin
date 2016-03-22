@@ -27,6 +27,7 @@ import com.github.cukedoctor.Cukedoctor;
 import com.github.cukedoctor.api.CukedoctorConverter;
 import com.github.cukedoctor.api.DocumentAttributes;
 import com.github.cukedoctor.api.model.Feature;
+import com.github.cukedoctor.extension.CukedoctorExtensionRegistry;
 import com.github.cukedoctor.jenkins.model.FormatType;
 import com.github.cukedoctor.jenkins.model.TocType;
 import com.github.cukedoctor.parser.FeatureParser;
@@ -59,8 +60,6 @@ import static com.github.cukedoctor.util.Assert.hasText;
  * @author rmpestano
  */
 public class CukedoctorPublisher extends Recorder {
-
-    public static final String ALL_HTML = "all.html";
 
     private String featuresDir;
 
@@ -140,12 +139,13 @@ public class CukedoctorPublisher extends Recorder {
 
             String outputPath = targetBuildDirectory.getAbsolutePath();
             if("all".equals(format.getFormat())){
-                File allHtml = new File(outputPath+ System.getProperty("file.separator")+ ALL_HTML);
+                File allHtml = new File(outputPath+ System.getProperty("file.separator")+ cukedoctorProjectAction.ALL_DOCUMENTATION);
                 if(!allHtml.exists()){
                     allHtml.createNewFile();
                 }
-                IOUtils.copy(getClass().getClassLoader().getResourceAsStream("/"+ALL_HTML), new FileOutputStream(allHtml));
-                cukedoctorProjectAction.setDocumentationPage(ALL_HTML);
+                IOUtils.copy(getClass().getResourceAsStream("/"+cukedoctorProjectAction.ALL_DOCUMENTATION), new FileOutputStream(allHtml));
+                cukedoctorProjectAction.setDocumentationPage(cukedoctorProjectAction.ALL_DOCUMENTATION);
+                //pdf needs to be rendered first otherwise org.jruby.exceptions.RaiseException: (EBADF) Bad file descriptor is thrown
                 documentAttributes.backend("pdf");
                 execute(features, documentAttributes, outputPath);
                 documentAttributes.backend("html5");
@@ -165,7 +165,7 @@ public class CukedoctorPublisher extends Recorder {
         return true;
     }
 
-    private void execute(List<Feature> features, DocumentAttributes attrs,String outputPath) {
+    private synchronized void execute(List<Feature> features, DocumentAttributes attrs,String outputPath) {
         Asciidoctor asciidoctor = null;
         try {
             if (attrs.getBackend().equalsIgnoreCase("pdf")) {
@@ -179,6 +179,8 @@ public class CukedoctorPublisher extends Recorder {
             asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
             if (attrs.getBackend().equalsIgnoreCase("pdf")) {
                 asciidoctor.unregisterAllExtensions();
+            } else{
+                new CukedoctorExtensionRegistry().register(asciidoctor);
             }
             asciidoctor.convertFile(adocFile, OptionsBuilder.options().backend(attrs.getBackend()).safe(SafeMode.UNSAFE).asMap());
         }finally {
