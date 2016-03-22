@@ -32,7 +32,6 @@ import com.github.cukedoctor.jenkins.model.TocType;
 import com.github.cukedoctor.parser.FeatureParser;
 import com.github.cukedoctor.util.FileUtil;
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -42,20 +41,15 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
-import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
-import net.sf.json.JSONObject;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.SafeMode;
-import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.List;
 
 import static com.github.cukedoctor.util.Assert.hasText;
@@ -88,8 +82,6 @@ public class CukedoctorPublisher extends Recorder {
         this.title = title;
     }
 
-
-
     @Override
     public Action getProjectAction(AbstractProject<?, ?> project) {
         return new CukedoctorProjectAction(project);
@@ -99,31 +91,34 @@ public class CukedoctorPublisher extends Recorder {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException {
 
+        PrintStream logger = listener.getLogger();
+        logger.println("");
+        logger.println("Generating living documentation for "+build.getProject().getName()+"...");
         String comutedFeaturesDir;
         if (!hasText(featuresDir)) {
             comutedFeaturesDir = build.getWorkspace().getRemote();
         } else{
-            comutedFeaturesDir = (build.getWorkspace().getRemote() +System.getProperty("file.separator")+featuresDir).
-                //remove double slashes
-                replaceAll((System.getProperty("file.separator")+System.getProperty("file.separator")),System.getProperty("file.separator"));
+            comutedFeaturesDir = new StringBuilder(build.getWorkspace().getRemote()).
+                    append(System.getProperty("file.separator")).append(featuresDir).
+                    toString().replaceAll("//",System.getProperty("file.separator"));
         }
 
-        List<Feature> features = FeatureParser.findAndParse(featuresDir);
+        List<Feature> features = FeatureParser.findAndParse(comutedFeaturesDir);
         if (!features.isEmpty()) {
             if (!hasText(title)) {
                 title = "Living Documentation";
             }
 
 
-            listener.getLogger().println("Found " + features.size() + " feature(s).");
-            listener.getLogger().println("Generating living documentation with the following arguments: ");
-            listener.getLogger().println("Features dir: " + comutedFeaturesDir);
-            listener.getLogger().println("Format: " + format.getFormat());
-            listener.getLogger().println("Toc: " + toc.getToc());
-            listener.getLogger().println("Title: " + title);
-            listener.getLogger().println("Numbered: " + Boolean.toString(numbered));
-            listener.getLogger().println("Section anchors: " + Boolean.toString(sectAnchors));
-            listener.getLogger().println("");
+            logger.println("Found " + features.size() + " feature(s).");
+            logger.println("Generating living documentation with the following arguments: ");
+            logger.println("Features dir: " + comutedFeaturesDir);
+            logger.println("Format: " + format.getFormat());
+            logger.println("Toc: " + toc.getToc());
+            logger.println("Title: " + title);
+            logger.println("Numbered: " + Boolean.toString(numbered));
+            logger.println("Section anchors: " + Boolean.toString(sectAnchors));
+            logger.println("");
 
             File targetBuildDirectory = new File(build.getWorkspace().getRemote(), "living-documentation");
             if (!targetBuildDirectory.exists()) {
@@ -154,7 +149,7 @@ public class CukedoctorPublisher extends Recorder {
             }
 
         } else {
-            listener.getLogger().println(String.format("No features Found in %s. \nLiving documentation will not be generated.", featuresDir));
+            logger.println(String.format("No features Found in %s. \nLiving documentation will not be generated.", comutedFeaturesDir));
 
         }
 
