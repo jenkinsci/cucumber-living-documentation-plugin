@@ -9,9 +9,8 @@
         <version>2.3</version>
         <relativePath/>
     </parent>
-    <groupId>com.github.cukedoctor</groupId>
-    <artifactId>cukedoctor-jenkins</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>living-documentation-plugin</artifactId>
+    <version>0.9.2-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <properties>
@@ -48,12 +47,14 @@
             <email>rmpestano@gmail.com</email>
         </developer>
     </developers>
-    <!-- Assuming you want to host on @jenkinsci:
-   <scm>
-     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-     <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
-   </scm>
+
+    <scm>
+        <connection>scm:git:git@github.com:jenkinsci/living-documentation-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/living-documentation-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/living-documentation-plugin</url>
+        <tag>HEAD</tag>
+    </scm>
+
     -->
    
     <dependencies>
@@ -114,35 +115,6 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-			 <plugin>
-                        <groupId>com.github.cukedoctor</groupId>
-                        <artifactId>cukedoctor-maven-plugin</artifactId>
-                        <version>0.9.1</version>
-                        <configuration>
-                            <outputFileName>cukedoctor-documentation</outputFileName>
-                            <documentTitle>Cukedoctor Documentation</documentTitle>
-                            <featuresDir>target/cukedoctor</featuresDir>
-                            <outputDir>cukedoctor</outputDir>
-                            <format>all</format>
-                            <toc>center</toc>
-                            <numbered>true</numbered>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>execute</goal>
-                                </goals>
-                                <phase>install</phase>
-                            </execution>
-                        </executions>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.jruby</groupId>
-                                <artifactId>jruby-complete</artifactId>
-                                <version>9.0.4.0</version>
-                             </dependency>
-                        </dependencies>
-                    </plugin>
         </plugins>
 
     </build>
