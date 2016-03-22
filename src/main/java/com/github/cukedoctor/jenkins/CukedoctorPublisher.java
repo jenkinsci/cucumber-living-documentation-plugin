@@ -30,6 +30,7 @@ import com.github.cukedoctor.api.model.Feature;
 import com.github.cukedoctor.jenkins.model.FormatType;
 import com.github.cukedoctor.jenkins.model.TocType;
 import com.github.cukedoctor.parser.FeatureParser;
+import com.github.cukedoctor.util.Constants;
 import com.github.cukedoctor.util.FileUtil;
 import hudson.Extension;
 import hudson.Launcher;
@@ -42,14 +43,14 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.SafeMode;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.List;
 
 import static com.github.cukedoctor.util.Assert.hasText;
@@ -59,11 +60,13 @@ import static com.github.cukedoctor.util.Assert.hasText;
  */
 public class CukedoctorPublisher extends Recorder {
 
+    public static final String ALL_HTML = "all.html";
+
     private String featuresDir;
 
     private final boolean numbered;
 
-    private final boolean sectAnchors ;
+    private final boolean sectAnchors;
 
     private final TocType toc;
 
@@ -71,6 +74,7 @@ public class CukedoctorPublisher extends Recorder {
 
     private String title;
 
+    private CukedoctorProjectAction cukedoctorProjectAction;
 
     @DataBoundConstructor
     public CukedoctorPublisher(String featuresDir, FormatType format, TocType toc, boolean numbered, boolean sectAnchors, String title) {
@@ -84,35 +88,37 @@ public class CukedoctorPublisher extends Recorder {
 
     @Override
     public Action getProjectAction(AbstractProject<?, ?> project) {
-        return new CukedoctorProjectAction(project);
+        if (cukedoctorProjectAction == null) {
+            cukedoctorProjectAction = new CukedoctorProjectAction(project);
+        }
+        return cukedoctorProjectAction;
     }
 
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-            throws IOException, InterruptedException {
+        throws IOException, InterruptedException {
 
         PrintStream logger = listener.getLogger();
         logger.println("");
-        logger.println("Generating living documentation for "+build.getProject().getName()+"...");
-        String comutedFeaturesDir;
+        logger.println("Generating living documentation for " + build.getProject().getName() + "...");
+        String computedFeaturesDir;
         if (!hasText(featuresDir)) {
-            comutedFeaturesDir = build.getWorkspace().getRemote();
-        } else{
-            comutedFeaturesDir = new StringBuilder(build.getWorkspace().getRemote()).
-                    append(System.getProperty("file.separator")).append(featuresDir).
-                    toString().replaceAll("//",System.getProperty("file.separator"));
+            computedFeaturesDir = build.getWorkspace().getRemote();
+        } else {
+            computedFeaturesDir = new StringBuilder(build.getWorkspace().getRemote()).
+                append(System.getProperty("file.separator")).append(featuresDir).
+                toString().replaceAll("//", System.getProperty("file.separator"));
         }
 
-        List<Feature> features = FeatureParser.findAndParse(comutedFeaturesDir);
+        List<Feature> features = FeatureParser.findAndParse(computedFeaturesDir);
         if (!features.isEmpty()) {
             if (!hasText(title)) {
                 title = "Living Documentation";
             }
 
-
             logger.println("Found " + features.size() + " feature(s).");
             logger.println("Generating living documentation with the following arguments: ");
-            logger.println("Features dir: " + comutedFeaturesDir);
+            logger.println("Features dir: " + computedFeaturesDir);
             logger.println("Format: " + format.getFormat());
             logger.println("Toc: " + toc.getToc());
             logger.println("Title: " + title);
@@ -120,7 +126,7 @@ public class CukedoctorPublisher extends Recorder {
             logger.println("Section anchors: " + Boolean.toString(sectAnchors));
             logger.println("");
 
-            File targetBuildDirectory = new File(build.getWorkspace().getRemote(), "living-documentation");
+            File targetBuildDirectory = new File(build.getRootDir(), CukedoctorBaseAction.BASE_URL);
             if (!targetBuildDirectory.exists()) {
                 targetBuildDirectory.mkdirs();
             }
@@ -132,24 +138,27 @@ public class CukedoctorPublisher extends Recorder {
                     sectAnchors(sectAnchors).
                     docTitle(title);
 
-            if(format.getFormat().equalsIgnoreCase("pdf")){
-                documentAttributes.pdfTheme(true).docInfo(false);
-            }else {
-                documentAttributes.docInfo(true).pdfTheme(false);
-            }
-
             String outputPath = targetBuildDirectory.getAbsolutePath();
             if("all".equals(format.getFormat())){
-                documentAttributes.backend("html5");
-                execute(features, documentAttributes, outputPath);
+                File allHtml = new File(outputPath+ System.getProperty("file.separator")+ ALL_HTML);
+                if(!allHtml.exists()){
+                    allHtml.createNewFile();
+                }
+                IOUtils.copy(getClass().getClassLoader().getResourceAsStream("/"+ALL_HTML), new FileOutputStream(allHtml));
+                cukedoctorProjectAction.setDocumentationPage(ALL_HTML);
                 documentAttributes.backend("pdf");
                 execute(features, documentAttributes, outputPath);
+                documentAttributes.backend("html5");
+                execute(features, documentAttributes, outputPath);
             }else{
+                cukedoctorProjectAction.setDocumentationPage("documentation."+format.getFormat());
                 execute(features, documentAttributes, outputPath);
             }
 
+            logger.println("Documentation generated successfully!");
+
         } else {
-            logger.println(String.format("No features Found in %s. \nLiving documentation will not be generated.", comutedFeaturesDir));
+            logger.println(String.format("No features Found in %s. \nLiving documentation will not be generated.", computedFeaturesDir));
 
         }
 
@@ -157,15 +166,26 @@ public class CukedoctorPublisher extends Recorder {
     }
 
     private void execute(List<Feature> features, DocumentAttributes attrs,String outputPath) {
-        CukedoctorConverter converter = Cukedoctor.instance(features, attrs);
-        String doc = converter.renderDocumentation();
-        File adocFile = FileUtil.saveFile(outputPath+"/documentation.adoc", doc);
-        Asciidoctor asciidoctor = Asciidoctor.Factory.create();
-        if(attrs.getBackend().equalsIgnoreCase("pdf")){
-            asciidoctor.unregisterAllExtensions();
+        Asciidoctor asciidoctor = null;
+        try {
+            if (attrs.getBackend().equalsIgnoreCase("pdf")) {
+                attrs.pdfTheme(true).docInfo(false);
+            } else {
+                attrs.docInfo(true).pdfTheme(false);
+            }
+            CukedoctorConverter converter = Cukedoctor.instance(features, attrs);
+            String doc = converter.renderDocumentation();
+            File adocFile = FileUtil.saveFile(outputPath + "/documentation.adoc", doc);
+            asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
+            if (attrs.getBackend().equalsIgnoreCase("pdf")) {
+                asciidoctor.unregisterAllExtensions();
+            }
+            asciidoctor.convertFile(adocFile, OptionsBuilder.options().backend(attrs.getBackend()).safe(SafeMode.UNSAFE).asMap());
+        }finally {
+            if(asciidoctor != null){
+                asciidoctor.shutdown();
+            }
         }
-        asciidoctor.convertFile(adocFile, OptionsBuilder.options().backend(attrs.getBackend()).safe(SafeMode.UNSAFE).asMap());
-        asciidoctor.shutdown();
     }
 
 

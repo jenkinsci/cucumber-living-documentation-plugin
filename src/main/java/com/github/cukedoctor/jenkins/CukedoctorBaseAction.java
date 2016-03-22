@@ -14,9 +14,9 @@ import hudson.model.DirectoryBrowserSupport;
 
 public abstract class CukedoctorBaseAction implements Action {
 
-    protected static final String BASE_URL = "living-documentation";
+    private String documentationPage = "documentation.html";
 
-    private static final String DEFAULT_PAGE = "index.html";
+    protected static final String BASE_URL = "living-documentation";
 
     public String getUrlName() {
         return BASE_URL;
@@ -35,11 +35,15 @@ public abstract class CukedoctorBaseAction implements Action {
         DirectoryBrowserSupport dbs = new DirectoryBrowserSupport(this, new FilePath(dir()), getTitle(), getUrlName(),
                 false);
 
-        dbs.setIndexFileName(DEFAULT_PAGE);
+        dbs.setIndexFileName(documentationPage);
         dbs.generateResponse(req, rsp, this);
     }
 
     protected abstract String getTitle();
 
     protected abstract File dir();
+
+    public void setDocumentationPage(String documentationPage) {
+        this.documentationPage = documentationPage;
+    }
 }
