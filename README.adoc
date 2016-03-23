@@ -30,7 +30,7 @@ For more example documentations see here: http://rmpestano.github.io/cukedoctor/
 This plugins depends on *Jenkins  v1640* or above due to https://issues.jenkins-ci.org/browse/JENKINS-31019[issue JENKINS-31019^].
 
 == Usage
-After instalation the post build action *Living documentation* must be enable on your jobs:
+After instalation the post build action *Living documentation* must be enabled on your jobs:
 
 image::config01.png[]
 
