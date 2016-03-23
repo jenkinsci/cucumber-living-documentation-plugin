@@ -78,9 +78,9 @@ public class CukedoctorPublisher extends Recorder {
 
     private CukedoctorProjectAction cukedoctorProjectAction;
     
-    private transient Asciidoctor asciidoctor;
+    private Asciidoctor asciidoctor;
     
-    private transient CukedoctorExtensionRegistry cukedoctorExtensionRegistry;
+    private CukedoctorExtensionRegistry cukedoctorExtensionRegistry;
     
     @DataBoundConstructor
     public CukedoctorPublisher(String featuresDir, FormatType format, TocType toc, boolean numbered, boolean sectAnchors, String title) {
@@ -156,7 +156,7 @@ public class CukedoctorPublisher extends Recorder {
 			        cukedoctorExtensionRegistry = new CukedoctorExtensionRegistry();
 			    }
 				if("all".equals(format.getFormat())){
-					File allHtml = new File(outputPath+ System.getProperty("file.separator")+ cukedoctorProjectAction.ALL_DOCUMENTATION);
+					File allHtml = new File(outputPath+ System.getProperty("file.separator")+ CukedoctorBaseAction.ALL_DOCUMENTATION);
 					if(!allHtml.exists()){
 						allHtml.createNewFile();
 					}
@@ -178,7 +178,7 @@ public class CukedoctorPublisher extends Recorder {
 				}
              }
 
-			listener.hyperlink("../"+cukedoctorProjectAction.BASE_URL, "Documentation generated successfully!");
+			listener.hyperlink("../"+CukedoctorBaseAction.BASE_URL, "Documentation generated successfully!");
 			logger.println("");
 
         } else {
@@ -271,6 +271,23 @@ public class CukedoctorPublisher extends Recorder {
     public String getTitle() {
         return title;
     }
+
+    public Asciidoctor getAsciidoctor() {
+        return asciidoctor;
+    }
+
+    public void setAsciidoctor(Asciidoctor asciidoctor) {
+        this.asciidoctor = asciidoctor;
+    }
+
+    public CukedoctorExtensionRegistry getCukedoctorExtensionRegistry() {
+        return cukedoctorExtensionRegistry;
+    }
+
+    public void setCukedoctorExtensionRegistry(CukedoctorExtensionRegistry cukedoctorExtensionRegistry) {
+        this.cukedoctorExtensionRegistry = cukedoctorExtensionRegistry;
+    }
+    
 
 
 }
