@@ -198,16 +198,7 @@ public class CukedoctorPublisher extends Recorder {
 
 
     @Extension
-    public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-
-      /*  public DescriptorImpl() {
-             load();
-        }*/
-
-        @Override
-        public String getHelpFile() {
-            return "/plugin/living-documentation/help.html";
-        }
+    public static class DescriptorImpl extends BuildStepDescriptor<Publisher> { 
 
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
