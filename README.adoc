@@ -3,10 +3,52 @@
 :sectlink:
 :numbered:
  
-
-
 BDD living documentation on your jenkins build via https://github.com/rmpestano/cukedoctor[Cukedoctor^]. 
 
+== Introduction
 
-For more information access plugin wiki here: https://wiki.jenkins-ci.org/display/JENKINS/living-documentation-plugin. 
+The living documentation plugin basically scans for cucumber json output files in jenkins workspace in order to generate living documentation from it.
 
+Cucumber json output files are generated after cucumber test using the json formatter:
+
+
+[source,java]
+----
+@RunWith(Cucumber.class)
+@CucumberOptions(plugin = {"json:target/cucumber.json"} )
+----
+NOTE: *plugin* option replaced *format* option which was deprecated in newer cucumber versions.
+
+Here is how a cucumber feature look like in a documentation:
+
+image::feature.png[]
+
+For more example documentations see here: http://rmpestano.github.io/cukedoctor/
+
+== Instalation
+
+This plugins depends on *Jenkins  v1640* or above due to https://issues.jenkins-ci.org/browse/JENKINS-31019[issue JENKINS-31019^].
+
+== Usage
+After instalation the post build action *Living documentation* must be enable on your jobs:
+
+image::config01.png[]
+
+
+== Configuration
+
+Here are the possible plugin configuration:
+
+image::config02.png[]
+
+== Accessing documentation
+
+When living documentation plugin is enabled in your job it adds a link which will take you to current project documentation:
+
+image::initial.png[]
+
+NOTE: The plugin only stores the last generated documentation. 
+
+If you choice format *all* in configuration then two links will be rendered in the side panel:
+
+image::all-docs.png[]
