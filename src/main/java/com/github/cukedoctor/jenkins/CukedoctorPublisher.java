@@ -23,6 +23,20 @@
  */
 package com.github.cukedoctor.jenkins;
 
+import static com.github.cukedoctor.util.Assert.hasText;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.List;
+
+import org.apache.commons.io.IOUtils;
+import org.asciidoctor.Asciidoctor;
+import org.asciidoctor.OptionsBuilder;
+import org.asciidoctor.SafeMode;
+import org.kohsuke.stapler.DataBoundConstructor;
+
 import com.github.cukedoctor.Cukedoctor;
 import com.github.cukedoctor.api.CukedoctorConverter;
 import com.github.cukedoctor.api.DocumentAttributes;
@@ -31,8 +45,8 @@ import com.github.cukedoctor.extension.CukedoctorExtensionRegistry;
 import com.github.cukedoctor.jenkins.model.FormatType;
 import com.github.cukedoctor.jenkins.model.TocType;
 import com.github.cukedoctor.parser.FeatureParser;
-import com.github.cukedoctor.util.Constants;
 import com.github.cukedoctor.util.FileUtil;
+
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -44,17 +58,6 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.asciidoctor.Asciidoctor;
-import org.asciidoctor.OptionsBuilder;
-import org.asciidoctor.SafeMode;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.io.*;
-import java.util.List;
-
-import static com.github.cukedoctor.util.Assert.hasText;
 
 /**
  * @author rmpestano
@@ -74,7 +77,11 @@ public class CukedoctorPublisher extends Recorder {
     private String title;
 
     private CukedoctorProjectAction cukedoctorProjectAction;
-
+    
+    private transient Asciidoctor asciidoctor;
+    
+    private transient CukedoctorExtensionRegistry cukedoctorExtensionRegistry;
+    
     @DataBoundConstructor
     public CukedoctorPublisher(String featuresDir, FormatType format, TocType toc, boolean numbered, boolean sectAnchors, String title) {
         this.featuresDir = featuresDir;
@@ -83,6 +90,7 @@ public class CukedoctorPublisher extends Recorder {
         this.format = format;
         this.sectAnchors = sectAnchors;
         this.title = title;
+   
     }
 
     @Override
@@ -138,24 +146,40 @@ public class CukedoctorPublisher extends Recorder {
                     docTitle(title);
 
             String outputPath = targetBuildDirectory.getAbsolutePath();
-            if("all".equals(format.getFormat())){
-                File allHtml = new File(outputPath+ System.getProperty("file.separator")+ cukedoctorProjectAction.ALL_DOCUMENTATION);
-                if(!allHtml.exists()){
-                    allHtml.createNewFile();
-                }
-                IOUtils.copy(getClass().getResourceAsStream("/"+cukedoctorProjectAction.ALL_DOCUMENTATION), new FileOutputStream(allHtml));
-                cukedoctorProjectAction.setDocumentationPage(cukedoctorProjectAction.ALL_DOCUMENTATION);
-                //pdf needs to be rendered first otherwise org.jruby.exceptions.RaiseException: (EBADF) Bad file descriptor is thrown
-                documentAttributes.backend("pdf");
-                execute(features, documentAttributes, outputPath);
-                documentAttributes.backend("html5");
-                execute(features, documentAttributes, outputPath);
-            }else{
-                cukedoctorProjectAction.setDocumentationPage("documentation."+format.getFormat());
-                execute(features, documentAttributes, outputPath);
-            }
+			try{
+			    /*
+		         * this throws: ERROR: org.jruby.exceptions.RaiseException: (LoadError) no such file to load -- jruby/java asciidoctor =
+		         * Asciidoctor.Factory.create();
+		         */
+			    asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
+			    if(cukedoctorExtensionRegistry == null){
+			        cukedoctorExtensionRegistry = new CukedoctorExtensionRegistry();
+			    }
+				if("all".equals(format.getFormat())){
+					File allHtml = new File(outputPath+ System.getProperty("file.separator")+ cukedoctorProjectAction.ALL_DOCUMENTATION);
+					if(!allHtml.exists()){
+						allHtml.createNewFile();
+					}
+					IOUtils.copy(getClass().getResourceAsStream("/"+CukedoctorBaseAction.ALL_DOCUMENTATION), new FileOutputStream(allHtml));
+					cukedoctorProjectAction.setDocumentationPage(CukedoctorBaseAction.ALL_DOCUMENTATION);
+					//pdf needs to be rendered first otherwise org.jruby.exceptions.RaiseException: (EBADF) Bad file descriptor is thrown
+					documentAttributes.backend("html5");
+					execute(features, documentAttributes, outputPath);
+					documentAttributes.backend("pdf");
+					execute(features, documentAttributes, outputPath);
+				}else{
+					cukedoctorProjectAction.setDocumentationPage("documentation."+format.getFormat());
+					execute(features, documentAttributes, outputPath);
+				}
+			}finally {
+				if(asciidoctor != null){
+					asciidoctor.shutdown();
+					asciidoctor.unregisterAllExtensions();
+				}
+             }
 
-            logger.println("Documentation generated successfully!");
+			listener.hyperlink("../"+cukedoctorProjectAction.BASE_URL, "Documentation generated successfully!");
+			logger.println("");
 
         } else {
             logger.println(String.format("No features Found in %s. \nLiving documentation will not be generated.", computedFeaturesDir));
@@ -165,33 +189,19 @@ public class CukedoctorPublisher extends Recorder {
         return true;
     }
 
-    private synchronized void execute(List<Feature> features, DocumentAttributes attrs,String outputPath) {
-        Asciidoctor asciidoctor = null;
-        try {
-            if (attrs.getBackend().equalsIgnoreCase("pdf")) {
-                attrs.pdfTheme(true).docInfo(false);
-            } else {
-                attrs.docInfo(true).pdfTheme(false);
-            }
-            CukedoctorConverter converter = Cukedoctor.instance(features, attrs);
-            String doc = converter.renderDocumentation();
-            File adocFile = FileUtil.saveFile(outputPath + "/documentation.adoc", doc);
-			/*
-			this throws: ERROR: org.jruby.exceptions.RaiseException: (LoadError) no such file to load -- jruby/java
-			asciidoctor = Asciidoctor.Factory.create();
-			*/
-            asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
-            if (attrs.getBackend().equalsIgnoreCase("pdf")) {
-                asciidoctor.unregisterAllExtensions();
-            } else{
-                new CukedoctorExtensionRegistry().register(asciidoctor);
-            }
-            asciidoctor.convertFile(adocFile, OptionsBuilder.options().backend(attrs.getBackend()).safe(SafeMode.UNSAFE).asMap());
-        }finally {
-            if(asciidoctor != null){
-                asciidoctor.shutdown();
-            }
+    private synchronized void execute(List<Feature> features, DocumentAttributes attrs, String outputPath) {
+        if (attrs.getBackend().equalsIgnoreCase("pdf")) {
+            attrs.pdfTheme(true).docInfo(false);
+            asciidoctor.unregisterAllExtensions();
+        } else {
+            attrs.docInfo(true).pdfTheme(false);
+            cukedoctorExtensionRegistry.register(asciidoctor);
         }
+        CukedoctorConverter converter = Cukedoctor.instance(features, attrs);
+        String doc = converter.renderDocumentation();
+        File adocFile = FileUtil.saveFile(outputPath + "/documentation.adoc", doc);
+        asciidoctor.convertFile(adocFile, OptionsBuilder.options().backend(attrs.getBackend()).safe(SafeMode.UNSAFE).asMap());
+
     }
 
 
