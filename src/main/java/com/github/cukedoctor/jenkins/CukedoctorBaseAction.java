@@ -14,8 +14,6 @@ import hudson.model.DirectoryBrowserSupport;
 
 public abstract class CukedoctorBaseAction implements Action {
 
-    protected static final String HTML_DOCUMENTATION = "documentation.html";
-    protected static final String PDF_DOCUMENTATION = "documentation.pdf";
     protected static final String ALL_DOCUMENTATION = "all.html";
 
     protected String documentationPage = "documentation.html";
@@ -31,7 +29,7 @@ public abstract class CukedoctorBaseAction implements Action {
     }
 
     public String getIconFileName() {
-        return "/plugin/cukedoctor-jenkins/cuke.png";
+        return "/plugin/living-documentation-plugin/cuke.png";
     }
 
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {

@@ -52,10 +52,8 @@
         <connection>scm:git:git@github.com:jenkinsci/living-documentation-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/living-documentation-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/living-documentation-plugin</url>
-        <tag>HEAD</tag>
     </scm>
 
-    -->
    
     <dependencies>
         <dependency>
@@ -102,7 +100,7 @@
     </pluginRepositories>
 
     <build>
-        <finalName>living-documentation-plugin</finalName>
+        <finalName>living-documentation</finalName>
 
         <plugins>
             <plugin>

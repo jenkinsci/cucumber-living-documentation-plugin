@@ -1,4 +1,4 @@
-= Cukedoctor Jenkins Plugin
+= Living Documentation Plugin for Jenkins
 :sectanchors:
 :sectlink:
 :numbered:

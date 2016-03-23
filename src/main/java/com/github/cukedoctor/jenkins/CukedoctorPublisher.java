@@ -206,7 +206,7 @@ public class CukedoctorPublisher extends Recorder {
 
         @Override
         public String getHelpFile() {
-            return "/plugin/cukedoctor-jenkins/help.html";
+            return "/plugin/living-documentation/help.html";
         }
 
 
