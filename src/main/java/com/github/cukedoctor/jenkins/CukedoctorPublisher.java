@@ -176,6 +176,10 @@ public class CukedoctorPublisher extends Recorder {
             CukedoctorConverter converter = Cukedoctor.instance(features, attrs);
             String doc = converter.renderDocumentation();
             File adocFile = FileUtil.saveFile(outputPath + "/documentation.adoc", doc);
+			/*
+			this throws: ERROR: org.jruby.exceptions.RaiseException: (LoadError) no such file to load -- jruby/java
+			asciidoctor = Asciidoctor.Factory.create();
+			*/
             asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
             if (attrs.getBackend().equalsIgnoreCase("pdf")) {
                 asciidoctor.unregisterAllExtensions();
