@@ -105,6 +105,9 @@ public class CukedoctorPublisher extends Recorder {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException {
 
+        if(build == null){
+            return false; //it can be null? findbugs...
+        }
         final ExecutorService pool = Executors.newFixedThreadPool(4);
         logger = listener.getLogger();
         logger.println("");
@@ -150,9 +153,17 @@ public class CukedoctorPublisher extends Recorder {
             if ("all".equals(format.getFormat())) {
                 File allHtml = new File(outputPath + System.getProperty("file.separator") + CukedoctorBaseAction.ALL_DOCUMENTATION);
                 if (!allHtml.exists()) {
-                    allHtml.createNewFile();
+                    boolean created = allHtml.createNewFile();
+                    if(!created){
+                        listener.error("Could not create file at location: "+allHtml.getAbsolutePath());
+                        return false;
+                    }
                 }
-                IOUtils.copy(getClass().getResourceAsStream("/" + CukedoctorBaseAction.ALL_DOCUMENTATION), new FileOutputStream(allHtml));
+                int result = IOUtils.copy(getClass().getResourceAsStream("/" + CukedoctorBaseAction.ALL_DOCUMENTATION), new FileOutputStream(allHtml));
+                if(result == -1){
+                    listener.error("File is too big.");//will never reach here but findbugs forced it...
+                    return false;
+                }
                 cukedoctorProjectAction.setDocumentationPage(CukedoctorBaseAction.ALL_DOCUMENTATION);
                 pool.execute(runAll(features, documentAttributes, outputPath));
             } else {
@@ -169,7 +180,7 @@ public class CukedoctorPublisher extends Recorder {
                 }
             } catch (final InterruptedException e) {
                 Thread.interrupted();
-                logger.println("Your documentation is taking too long to be generated. Halting the generation now to not throttle Jenkins.");
+                listener.error("Your documentation is taking too long to be generated. Halting the generation now to not throttle Jenkins.");
                 return true;
             }
             listener.hyperlink("../" + CukedoctorBaseAction.BASE_URL, "Documentation generated successfully!");
@@ -209,7 +220,8 @@ public class CukedoctorPublisher extends Recorder {
                     generateDocumentation(features, attrs, outputPath, asciidoctor);
 
                 } catch (Exception e) {
-                    logger.print(String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause()));
+                    logger.println(String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause()));
+                    e.printStackTrace();
                 } finally {
                     if (asciidoctor != null) {
                         asciidoctor.shutdown();
