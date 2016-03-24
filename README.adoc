@@ -23,9 +23,9 @@ Here is how a cucumber feature look like in a documentation:
 
 image::feature.png[]
 
-For more example documentations see here: http://rmpestano.github.io/cukedoctor/.
+For more example documentations http://rmpestano.github.io/cukedoctor/[see here^].
 
-Cucumber json files samples can be found here: https://github.com/rmpestano/living-documentation-plugin/tree/master/src/test/resources/json-output.
+Cucumber json files samples can be https://github.com/rmpestano/living-documentation-plugin/tree/master/src/test/resources/json-output[found here^].
 
 == Instalation
 
