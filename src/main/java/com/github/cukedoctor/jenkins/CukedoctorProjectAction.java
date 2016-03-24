@@ -35,10 +35,11 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
     /**
      * sidebar panel is visible when html and pdf documentation is available
      * so user don't need to navigate to all.html to choice documentation format
+     * @return <code>true</code> if both html and pdf documentation is present on last build <code>false</code> otherwise. 
      */
     public boolean showSidebarPanel() {
         if(documentationPage != null && notEmpty(project.getBuilds())) {
-            AbstractBuild lastBuild = project.getBuilds().getLastBuild();
+            AbstractBuild<?,?> lastBuild = project.getBuilds().getLastBuild();
             final Path BUILD_PATH = Paths.get(lastBuild.getRootDir() + System.getProperty("file.separator") + BASE_URL);
 
             if(Files.exists(BUILD_PATH)){
