@@ -242,7 +242,6 @@ public class CukedoctorPublisher extends Recorder {
 
     protected void generateDocumentation(List<Feature> features, DocumentAttributes attrs, String outputPath, Asciidoctor asciidoctor) {
         asciidoctor.unregisterAllExtensions();
-        logger.println("Asciidoctor: " + asciidoctor);
         if (attrs.getBackend().equalsIgnoreCase("pdf")) {
             attrs.pdfTheme(true).docInfo(false);
         } else {

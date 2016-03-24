@@ -2,17 +2,21 @@ package com.github.cukedoctor.jenkins;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Comparator;
 
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.ProminentProjectAction;
-import hudson.model.Run;
+import com.github.cukedoctor.util.Assert;
+import com.github.cukedoctor.util.FileUtil;
+import hudson.model.*;
+
+import static com.github.cukedoctor.util.Assert.notEmpty;
 
 public class CukedoctorProjectAction extends CukedoctorBaseAction implements ProminentProjectAction {
 
+    private static final java.lang.String HTML_DOCUMENTATION = "documentation.html";
+    private static final java.lang.String PDF_DOCUMENTATION = "documentation.pdf";
     private final AbstractProject<?, ?> project;
 
     private String jobName;
@@ -33,10 +37,13 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
      * so user don't need to navigate to all.html to choice documentation format
      */
     public boolean showSidebarPanel() {
-        //
-        if(documentationPage != null && (documentationPage.equals(ALL_DOCUMENTATION))) {
-            for (AbstractBuild<?, ?> build : project.getBuilds()) {
-                if (Files.exists(Paths.get(build.getRootDir() + "/" + BASE_URL))) {
+        if(documentationPage != null && notEmpty(project.getBuilds())) {
+            AbstractBuild lastBuild = project.getBuilds().getLastBuild();
+            final Path BUILD_PATH = Paths.get(lastBuild.getRootDir() + System.getProperty("file.separator") + BASE_URL);
+
+            if(Files.exists(BUILD_PATH)){
+                if(!FileUtil.findFiles(BUILD_PATH.toString(),HTML_DOCUMENTATION,true).isEmpty()
+                        && !FileUtil.findFiles(BUILD_PATH.toString(),PDF_DOCUMENTATION,true).isEmpty()){
                     return true;
                 }
             }
