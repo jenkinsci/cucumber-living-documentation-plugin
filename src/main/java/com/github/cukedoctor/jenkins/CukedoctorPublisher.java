@@ -23,23 +23,6 @@
  */
 package com.github.cukedoctor.jenkins;
 
-import static com.github.cukedoctor.util.Assert.hasText;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.io.IOUtils;
-import org.asciidoctor.Asciidoctor;
-import org.asciidoctor.OptionsBuilder;
-import org.asciidoctor.SafeMode;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import com.github.cukedoctor.Cukedoctor;
 import com.github.cukedoctor.api.CukedoctorConverter;
 import com.github.cukedoctor.api.DocumentAttributes;
@@ -49,7 +32,6 @@ import com.github.cukedoctor.jenkins.model.FormatType;
 import com.github.cukedoctor.jenkins.model.TocType;
 import com.github.cukedoctor.parser.FeatureParser;
 import com.github.cukedoctor.util.FileUtil;
-
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -61,6 +43,22 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
+import org.apache.commons.io.IOUtils;
+import org.asciidoctor.Asciidoctor;
+import org.asciidoctor.OptionsBuilder;
+import org.asciidoctor.SafeMode;
+import org.kohsuke.stapler.DataBoundConstructor;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import static com.github.cukedoctor.util.Assert.hasText;
 
 /**
  * @author rmpestano
@@ -80,8 +78,10 @@ public class CukedoctorPublisher extends Recorder {
     private String title;
 
     private CukedoctorProjectAction cukedoctorProjectAction;
-    
-    
+
+    private PrintStream logger;
+
+
     @DataBoundConstructor
     public CukedoctorPublisher(String featuresDir, FormatType format, TocType toc, boolean numbered, boolean sectAnchors, String title) {
         this.featuresDir = featuresDir;
@@ -90,7 +90,7 @@ public class CukedoctorPublisher extends Recorder {
         this.format = format;
         this.sectAnchors = sectAnchors;
         this.title = title;
-   
+
     }
 
     @Override
@@ -103,10 +103,10 @@ public class CukedoctorPublisher extends Recorder {
 
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-        throws IOException, InterruptedException {
+            throws IOException, InterruptedException {
 
         final ExecutorService pool = Executors.newFixedThreadPool(4);
-        PrintStream logger = listener.getLogger();
+        logger = listener.getLogger();
         logger.println("");
         logger.println("Generating living documentation for " + build.getProject().getName() + "...");
         String computedFeaturesDir;
@@ -114,8 +114,8 @@ public class CukedoctorPublisher extends Recorder {
             computedFeaturesDir = build.getWorkspace().getRemote();
         } else {
             computedFeaturesDir = new StringBuilder(build.getWorkspace().getRemote()).
-                append(System.getProperty("file.separator")).append(featuresDir).
-                toString().replaceAll("//", System.getProperty("file.separator"));
+                    append(System.getProperty("file.separator")).append(featuresDir).
+                    toString().replaceAll("//", System.getProperty("file.separator"));
         }
 
         List<Feature> features = FeatureParser.findAndParse(computedFeaturesDir);
@@ -147,28 +147,29 @@ public class CukedoctorPublisher extends Recorder {
                     docTitle(title);
 
             String outputPath = targetBuildDirectory.getAbsolutePath();
-				if("all".equals(format.getFormat())){
-					File allHtml = new File(outputPath+ System.getProperty("file.separator")+ CukedoctorBaseAction.ALL_DOCUMENTATION);
-					if(!allHtml.exists()){
-						allHtml.createNewFile();
-					}
-					IOUtils.copy(getClass().getResourceAsStream("/"+CukedoctorBaseAction.ALL_DOCUMENTATION), new FileOutputStream(allHtml));
-					cukedoctorProjectAction.setDocumentationPage(CukedoctorBaseAction.ALL_DOCUMENTATION);
-					pool.submit(executeAll(features,documentAttributes,outputPath));
-				}else{
-					cukedoctorProjectAction.setDocumentationPage("documentation."+format.getFormat());
-					pool.submit(execute(features,documentAttributes,outputPath));
-				}
+            if ("all".equals(format.getFormat())) {
+                File allHtml = new File(outputPath + System.getProperty("file.separator") + CukedoctorBaseAction.ALL_DOCUMENTATION);
+                if (!allHtml.exists()) {
+                    allHtml.createNewFile();
+                }
+                IOUtils.copy(getClass().getResourceAsStream("/" + CukedoctorBaseAction.ALL_DOCUMENTATION), new FileOutputStream(allHtml));
+                cukedoctorProjectAction.setDocumentationPage(CukedoctorBaseAction.ALL_DOCUMENTATION);
+                pool.execute(runAll(features, documentAttributes, outputPath));
+            } else {
+                cukedoctorProjectAction.setDocumentationPage("documentation." + format.getFormat());
+                pool.execute(run(features, documentAttributes, outputPath));
+            }
 
-			pool.shutdown();
+            pool.shutdown();
             try {
-                pool.awaitTermination(3, TimeUnit.MINUTES);
+                pool.awaitTermination(2, TimeUnit.MINUTES);
             } catch (final InterruptedException e) {
                 Thread.interrupted();
-                e.printStackTrace();
+                logger.println("Your documentation is taking too long to be generated. Halting the generation now to not throttle Jenkins.");
+                return true;
             }
-			listener.hyperlink("../"+CukedoctorBaseAction.BASE_URL, "Documentation generated successfully!");
-			logger.println("");
+            listener.hyperlink("../" + CukedoctorBaseAction.BASE_URL, "Documentation generated successfully!");
+            logger.println("");
 
         } else {
             logger.println(String.format("No features Found in %s. \nLiving documentation will not be generated.", computedFeaturesDir));
@@ -178,77 +179,72 @@ public class CukedoctorPublisher extends Recorder {
         return true;
     }
 
-    
+
     /**
-     * generates html and pdf documentation 'inlined' otherwise if we execute them in separated threads 
-     * only the last thread content is rendered (cause they work on the same adoc file)  
+     * generates html and pdf documentation 'inlined' otherwise if we execute them in separated threads
+     * only the last thread content is rendered (cause they work on the same adoc file)
+     *
      * @return
      */
-    private Thread executeAll(final List<Feature> features, final DocumentAttributes attrs,final String outputPath) {
-        Thread executor = new Thread(new Runnable() {
-            
+    private Runnable runAll(final List<Feature> features, final DocumentAttributes attrs, final String outputPath) {
+        return new Runnable() {
+
             @Override
             public void run() {
-                
-                Asciidoctor asciidoctor=null;
+
+                Asciidoctor asciidoctor = null;
                 try {
                     /*
                      * this throws: ERROR: org.jruby.exceptions.RaiseException: (LoadError) no such file to load -- jruby/java
                      * asciidoctor = Asciidoctor.Factory.create();
                      */
                     asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
-                    attrs.backend("html5");
-                    generateDocumentation(features, attrs, outputPath, asciidoctor);    
                     attrs.backend("pdf");
-                    generateDocumentation(features, attrs, outputPath, asciidoctor);    
-                  
+                    generateDocumentation(features, attrs, outputPath, asciidoctor);
+                    attrs.backend("html5");
+                    generateDocumentation(features, attrs, outputPath, asciidoctor);
+
+                } catch (Exception e) {
+                    logger.print(String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause()));
                 } finally {
                     if (asciidoctor != null) {
                         asciidoctor.shutdown();
-                        asciidoctor.unregisterAllExtensions();
                     }
                 }
             }
-        });
-        
-        executor.setDaemon(true);
-        return executor;
-        
+        };
 
     }
-    
-    
-    private Thread execute(final List<Feature> features, final DocumentAttributes attrs,final String outputPath) {
-        Thread executor = new Thread(new Runnable() {
-            
+
+
+    private Runnable run(final List<Feature> features, final DocumentAttributes attrs, final String outputPath) {
+        return new Runnable() {
+
             @Override
             public void run() {
-               Asciidoctor asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
-               try{
-                 generateDocumentation(features,attrs,outputPath,asciidoctor);
-               }finally{
-                   if(asciidoctor != null){
-                       asciidoctor.shutdown();
-                   }
-               }
+                Asciidoctor asciidoctor = null;
+                try {
+                    asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
+                    generateDocumentation(features, attrs, outputPath, asciidoctor);
+                } catch (Exception e) {
+                    logger.print(String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause()));
+                } finally {
+                    if (asciidoctor != null) {
+                        asciidoctor.shutdown();
+                    }
+                }
             }
-        });
-        
-        executor.setDaemon(true);
-        return executor;
-        
+        };
+
 
     }
-    
+
 
     protected void generateDocumentation(List<Feature> features, DocumentAttributes attrs, String outputPath, Asciidoctor asciidoctor) {
-        /*
-         * this throws: ERROR: org.jruby.exceptions.RaiseException: (LoadError) no such file to load -- jruby/java asciidoctor =
-         * Asciidoctor.Factory.create();
-         */
+        asciidoctor.unregisterAllExtensions();
+        logger.println("Asciidoctor: " + asciidoctor);
         if (attrs.getBackend().equalsIgnoreCase("pdf")) {
             attrs.pdfTheme(true).docInfo(false);
-            asciidoctor.unregisterAllExtensions();
         } else {
             attrs.docInfo(true).pdfTheme(false);
             new CukedoctorExtensionRegistry().register(asciidoctor);
@@ -267,7 +263,7 @@ public class CukedoctorPublisher extends Recorder {
 
 
     @Extension
-    public static class DescriptorImpl extends BuildStepDescriptor<Publisher> { 
+    public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
@@ -303,7 +299,6 @@ public class CukedoctorPublisher extends Recorder {
     }
 
 
-    
     public String getFeaturesDir() {
         return featuresDir;
     }
@@ -327,7 +322,6 @@ public class CukedoctorPublisher extends Recorder {
     public String getTitle() {
         return title;
     }
-
 
 
 }
