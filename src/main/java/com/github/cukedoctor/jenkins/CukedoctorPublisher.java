@@ -162,7 +162,7 @@ public class CukedoctorPublisher extends Recorder {
 
             pool.shutdown();
             try {
-                pool.awaitTermination(2, TimeUnit.MINUTES);
+                pool.awaitTermination(4, TimeUnit.MINUTES);
             } catch (final InterruptedException e) {
                 Thread.interrupted();
                 logger.println("Your documentation is taking too long to be generated. Halting the generation now to not throttle Jenkins.");
