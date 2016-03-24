@@ -174,9 +174,9 @@ public class CukedoctorPublisher extends Recorder {
             pool.shutdown();
             try {
                 if(format.equals(FormatType.HTML)){
-                    pool.awaitTermination(1, TimeUnit.MINUTES);  
+                    pool.awaitTermination(2, TimeUnit.MINUTES);  
                 } else{
-                    pool.awaitTermination(5, TimeUnit.MINUTES);
+                    pool.awaitTermination(6, TimeUnit.MINUTES);
                 }
             } catch (final InterruptedException e) {
                 Thread.interrupted();
