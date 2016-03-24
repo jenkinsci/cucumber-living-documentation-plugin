@@ -187,7 +187,7 @@ public class CukedoctorPublisher extends Recorder {
             logger.println("");
 
         } else {
-            logger.println(String.format("No features Found in %s. \nLiving documentation will not be generated.", computedFeaturesDir));
+            logger.println(String.format("No features Found in %s. %sLiving documentation will not be generated.", computedFeaturesDir,"\n"));
 
         }
 
