@@ -110,8 +110,6 @@ public class CukedoctorPublisher extends Recorder {
         }
         final ExecutorService pool = Executors.newFixedThreadPool(4);
         logger = listener.getLogger();
-        logger.println("");
-        logger.println("Generating living documentation for " + build.getProject().getName() + "...");
         String computedFeaturesDir;
         if (!hasText(featuresDir)) {
             computedFeaturesDir = build.getWorkspace().getRemote();
@@ -120,6 +118,16 @@ public class CukedoctorPublisher extends Recorder {
                     append(System.getProperty("file.separator")).append(featuresDir).
                     toString().replaceAll("//", System.getProperty("file.separator"));
         }
+        
+        logger.println("");
+        logger.println("Generating living documentation for " + build.getProject().getName() + " with the following arguments: ");
+        logger.println("Features dir: " + computedFeaturesDir);
+        logger.println("Format: " + format.getFormat());
+        logger.println("Toc: " + toc.getToc());
+        logger.println("Title: " + title);
+        logger.println("Numbered: " + Boolean.toString(numbered));
+        logger.println("Section anchors: " + Boolean.toString(sectAnchors));
+        logger.println("");
 
         List<Feature> features = FeatureParser.findAndParse(computedFeaturesDir);
         if (!features.isEmpty()) {
@@ -128,14 +136,6 @@ public class CukedoctorPublisher extends Recorder {
             }
 
             logger.println("Found " + features.size() + " feature(s).");
-            logger.println("Generating living documentation with the following arguments: ");
-            logger.println("Features dir: " + computedFeaturesDir);
-            logger.println("Format: " + format.getFormat());
-            logger.println("Toc: " + toc.getToc());
-            logger.println("Title: " + title);
-            logger.println("Numbered: " + Boolean.toString(numbered));
-            logger.println("Section anchors: " + Boolean.toString(sectAnchors));
-            logger.println("");
 
             File targetBuildDirectory = new File(build.getRootDir(), CukedoctorBaseAction.BASE_URL);
             if (!targetBuildDirectory.exists()) {
