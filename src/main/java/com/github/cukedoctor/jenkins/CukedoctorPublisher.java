@@ -227,7 +227,8 @@ public class CukedoctorPublisher extends Recorder {
                     asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
                     generateDocumentation(features, attrs, outputPath, asciidoctor);
                 } catch (Exception e) {
-                    logger.print(String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause()));
+                    logger.println(String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause()));
+                    e.printStackTrace();
                 } finally {
                     if (asciidoctor != null) {
                         asciidoctor.shutdown();
