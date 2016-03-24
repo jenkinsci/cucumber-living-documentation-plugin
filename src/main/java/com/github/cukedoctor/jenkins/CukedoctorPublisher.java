@@ -214,9 +214,9 @@ public class CukedoctorPublisher extends Recorder {
                      * asciidoctor = Asciidoctor.Factory.create();
                      */
                     asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
-                    attrs.backend("pdf");
+					attrs.backend("html5");
                     generateDocumentation(features, attrs, outputPath, asciidoctor);
-                    attrs.backend("html5");
+                    attrs.backend("pdf");
                     generateDocumentation(features, attrs, outputPath, asciidoctor);
 
                 } catch (Exception e) {
@@ -257,22 +257,18 @@ public class CukedoctorPublisher extends Recorder {
     }
 
 
-    protected void generateDocumentation(List<Feature> features, DocumentAttributes attrs, String outputPath, Asciidoctor asciidoctor) {
-        synchronized (asciidoctor) {
-            asciidoctor.unregisterAllExtensions();
-            if (attrs.getBackend().equalsIgnoreCase("pdf")) {
-                attrs.pdfTheme(true).docInfo(false);
-            } else {
-                attrs.docInfo(true).pdfTheme(false);
-                new CukedoctorExtensionRegistry().register(asciidoctor);
-            }
-            CukedoctorConverter converter = Cukedoctor.instance(features, attrs);
-            String doc = converter.renderDocumentation();
-            File adocFile = FileUtil.saveFile(outputPath + "/documentation.adoc", doc);
-            asciidoctor.convertFile(adocFile, OptionsBuilder.options().backend(attrs.getBackend()).safe(SafeMode.UNSAFE).asMap());
+    protected synchronized void generateDocumentation(List<Feature> features, DocumentAttributes attrs, String outputPath, Asciidoctor asciidoctor) {
+        asciidoctor.unregisterAllExtensions();
+        if (attrs.getBackend().equalsIgnoreCase("pdf")) {
+            attrs.pdfTheme(true).docInfo(false);
+         } else {
+           attrs.docInfo(true).pdfTheme(false);
+           new CukedoctorExtensionRegistry().register(asciidoctor);
         }
-        
-
+        CukedoctorConverter converter = Cukedoctor.instance(features, attrs);
+        String doc = converter.renderDocumentation();
+        File adocFile = FileUtil.saveFile(outputPath + "/documentation.adoc", doc);
+        asciidoctor.convertFile(adocFile, OptionsBuilder.options().backend(attrs.getBackend()).safe(SafeMode.UNSAFE).asMap());
     }
 
     @Override
