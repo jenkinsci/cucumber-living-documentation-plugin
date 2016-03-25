@@ -27,19 +27,6 @@ For more example documentations http://rmpestano.github.io/cukedoctor/[see here^
 
 Cucumber json files samples can be https://github.com/rmpestano/cucumber-living-documentation-plugin/tree/master/src/test/resources/json-output[found here^].
 
-== Instalation
-
-This plugins depends on *Jenkins  v1640* or above due to https://issues.jenkins-ci.org/browse/JENKINS-31019[issue JENKINS-31019^].
-
-[NOTE]
-====
-If you face the exception below:
-----
-java.lang.ClassCircularityError: org/jruby/RubyClass
-----
-
-you probably hit https://issues.jenkins-ci.org/browse/JENKINS-31019[issue JENKINS-31019], to solve that you need to upgrade your installation to *v1.640* or newer.
-====
 
 == Usage
 After instalation the post build action *Living documentation* must be enabled on your jobs:
@@ -66,4 +53,12 @@ If you choice format *all* in configuration then two links will be rendered in t
 image::all-docs.png[]
 
  
+[IMPORTANT]
+====
+If you face the exception below:
+----
+java.lang.ClassCircularityError: org/jruby/RubyClass
+----
 
+you probably hit https://issues.jenkins-ci.org/browse/JENKINS-31019[issue JENKINS-31019], to solve that you need to upgrade your installation to *v1.640* or newer.
+====
