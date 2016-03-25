@@ -6,10 +6,10 @@
 			<h2>Project living documentation</h2>
 		    <ul>
 		          <li style="text-align: left;">
-              	  	    <a href="../${action.job()}/living-documentation/documentation.html" target="_blank">HTML</a>
+              	  	    <a href="../${action.job()}/cucumber-living-documentation/documentation.html" target="_blank">HTML</a>
                   </li>
               	  <li style="text-align: left;">
-					    <a href="../${action.job()}/living-documentation/documentation.pdf" target="_blank">PDF</a>
+					    <a href="../${action.job()}/cucumber-living-documentation/documentation.pdf" target="_blank">PDF</a>
                   </li>
 		    </ul>
 		</div>

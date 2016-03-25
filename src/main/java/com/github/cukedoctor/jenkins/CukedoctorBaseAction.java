@@ -19,7 +19,7 @@ public abstract class CukedoctorBaseAction implements Action {
 
     protected String documentationPage = "documentation.html";
 
-    protected static final String BASE_URL = "living-documentation";
+    protected static final String BASE_URL = "cucumber-living-documentation";
 
     public String getUrlName() {
         return BASE_URL;
@@ -30,7 +30,7 @@ public abstract class CukedoctorBaseAction implements Action {
     }
 
     public String getIconFileName() {
-        return "/plugin/living-documentation/cuke.png";
+        return "/plugin/cucumber-living-documentation/cuke.png";
     }
 
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {

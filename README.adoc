@@ -1,4 +1,4 @@
-= Living Documentation Plugin for Jenkins
+= Cucumber Living Documentation Plugin for Jenkins
 :sectanchors:
 :sectlink:
 :numbered:
@@ -7,9 +7,9 @@ BDD living documentation on your jenkins build via https://github.com/rmpestano/
 
 == Introduction
 
-The living documentation plugin basically scans for cucumber json output files in jenkins workspace in order to generate living documentation from it.
+The Cucumber living documentation plugin basically scans for Cucumber json output files in jenkins workspace in order to generate living documentation from it.
 
-Cucumber json output files are generated after cucumber test using the json formatter:
+Cucumber json output files are generated after Cucumber test using the json formatter:
 
 
 [source,java]
@@ -19,13 +19,13 @@ Cucumber json output files are generated after cucumber test using the json form
 ----
 NOTE: *plugin* option replaced *format* option which was deprecated in newer cucumber versions.
 
-Here is how a cucumber feature look like in a documentation:
+Here is how a Cucumber feature look like in a documentation:
 
 image::feature.png[]
 
 For more example documentations http://rmpestano.github.io/cukedoctor/[see here^].
 
-Cucumber json files samples can be https://github.com/rmpestano/living-documentation-plugin/tree/master/src/test/resources/json-output[found here^].
+Cucumber json files samples can be https://github.com/rmpestano/cucumber-living-documentation-plugin/tree/master/src/test/resources/json-output[found here^].
 
 == Instalation
 
@@ -45,7 +45,7 @@ image::config02.png[]
 
 == Accessing documentation
 
-When living documentation plugin is enabled in your job it adds a link which will take you to current project documentation:
+When Cucumber living documentation plugin is enabled in your job it adds a link which will take you to current project documentation:
 
 image::initial.png[]
 

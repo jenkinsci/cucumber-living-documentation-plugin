@@ -9,7 +9,7 @@
         <version>2.3</version>
         <relativePath/>
     </parent>
-    <artifactId>living-documentation</artifactId>
+    <artifactId>cucumber-living-documentation</artifactId>
     <version>0.1-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
@@ -27,7 +27,7 @@
         -->
     </properties>
 
-    <name>Living Documentation Plugin</name>
+    <name>Cucumber Living Documentation Plugin</name>
     <description>Enables Cucumber living documentation on Jenkins</description>
     <url>https://wiki.jenkins-ci.org/display/JENKINS/Living+Documentation+Plugin</url>
 
@@ -49,9 +49,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:jenkinsci/living-documentation-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:jenkinsci/living-documentation-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/living-documentation-plugin</url>
+        <connection>scm:git:git@github.com:jenkinsci/cucumber-living-documentation-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/cucumber-living-documentation-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/cucumber-living-documentation-plugin</url>
     </scm>
 
    
@@ -94,7 +94,7 @@
     </pluginRepositories>
 
     <build>
-        <finalName>living-documentation</finalName>
+        <finalName>cucumber-living-documentation</finalName>
 
         <plugins>
             <plugin>
