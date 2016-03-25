@@ -30,7 +30,7 @@ public abstract class CukedoctorBaseAction implements Action {
     }
 
     public String getIconFileName() {
-        return "/plugin/living-documentation-plugin/cuke.png";
+        return "/plugin/living-documentation/cuke.png";
     }
 
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
