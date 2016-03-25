@@ -33,10 +33,13 @@ This plugins depends on *Jenkins  v1640* or above due to https://issues.jenkins-
 
 [NOTE]
 ====
-If you face _java.lang.ClassCircularityError: org/jruby/RubyClass_ you probably hit https://issues.jenkins-ci.org/browse/JENKINS-31019[issue JENKINS-31019], to solve that need to upgrade your installation to *v1.640* or newer.
-====
+If you face the exception below:
+----
+java.lang.ClassCircularityError: org/jruby/RubyClass
+----
 
- It may work on older versions like *1580.1* and *1.596.2* but beware that issue JENKINS-31019 was introduced in future version so if you can upgrade just go to *1.640*.
+you probably hit https://issues.jenkins-ci.org/browse/JENKINS-31019[issue JENKINS-31019], to solve that need to upgrade your installation to *v1.640* or newer.
+====
 
 == Usage
 After instalation the post build action *Living documentation* must be enabled on your jobs:
