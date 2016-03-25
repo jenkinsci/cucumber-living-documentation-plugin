@@ -135,7 +135,7 @@ public class CukedoctorPublisher extends Recorder {
                 title = "Living Documentation";
             }
 
-            logger.println("Found " + features.size() + " feature(s).");
+            logger.println("Found " + features.size() + " feature(s)...");
 
             File targetBuildDirectory = new File(build.getRootDir(), CukedoctorBaseAction.BASE_URL);
             if (!targetBuildDirectory.exists()) {
@@ -176,7 +176,7 @@ public class CukedoctorPublisher extends Recorder {
                 if(format.equals(FormatType.HTML)){
                     pool.awaitTermination(2, TimeUnit.MINUTES);  
                 } else{
-                    pool.awaitTermination(6, TimeUnit.MINUTES);
+                    pool.awaitTermination(8, TimeUnit.MINUTES);
                 }
             } catch (final InterruptedException e) {
                 Thread.interrupted();
