@@ -38,7 +38,7 @@ If you face the exception below:
 java.lang.ClassCircularityError: org/jruby/RubyClass
 ----
 
-you probably hit https://issues.jenkins-ci.org/browse/JENKINS-31019[issue JENKINS-31019], to solve that need to upgrade your installation to *v1.640* or newer.
+you probably hit https://issues.jenkins-ci.org/browse/JENKINS-31019[issue JENKINS-31019], to solve that you need to upgrade your installation to *v1.640* or newer.
 ====
 
 == Usage
