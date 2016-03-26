@@ -49,10 +49,7 @@ import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.SafeMode;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -105,9 +102,11 @@ public class CukedoctorPublisher extends Recorder {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException {
 
-        if(build == null){
+        if (build == null || build.getWorkspace() == null) {
+            listener.error("Could not resolve build workspace.");
             return false; //it can be null? findbugs...
         }
+
         final ExecutorService pool = Executors.newFixedThreadPool(4);
         logger = listener.getLogger();
         String computedFeaturesDir;
@@ -118,7 +117,7 @@ public class CukedoctorPublisher extends Recorder {
                     append(System.getProperty("file.separator")).append(featuresDir).
                     toString().replaceAll("//", System.getProperty("file.separator"));
         }
-        
+
         logger.println("");
         logger.println("Generating living documentation for " + build.getProject().getName() + " with the following arguments: ");
         logger.println("Features dir: " + computedFeaturesDir);
@@ -139,7 +138,11 @@ public class CukedoctorPublisher extends Recorder {
 
             File targetBuildDirectory = new File(build.getRootDir(), CukedoctorBaseAction.BASE_URL);
             if (!targetBuildDirectory.exists()) {
-                targetBuildDirectory.mkdirs();
+                boolean created = targetBuildDirectory.mkdirs();
+                if (!created) {
+                    listener.error("Could not create file at location: " + targetBuildDirectory.getAbsolutePath());
+                    return false;
+                }
             }
 
             DocumentAttributes documentAttributes = new DocumentAttributes().
@@ -154,15 +157,29 @@ public class CukedoctorPublisher extends Recorder {
                 File allHtml = new File(outputPath + System.getProperty("file.separator") + CukedoctorBaseAction.ALL_DOCUMENTATION);
                 if (!allHtml.exists()) {
                     boolean created = allHtml.createNewFile();
-                    if(!created){
-                        listener.error("Could not create file at location: "+allHtml.getAbsolutePath());
+                    if (!created) {
+                        listener.error("Could not create file at location: " + allHtml.getAbsolutePath());
                         return false;
                     }
                 }
-                int result = IOUtils.copy(getClass().getResourceAsStream("/" + CukedoctorBaseAction.ALL_DOCUMENTATION), new FileOutputStream(allHtml));
-                if(result == -1){
-                    listener.error("File is too big.");//will never reach here but findbugs forced it...
-                    return false;
+                InputStream is = null;
+                OutputStream os = null;
+                try {
+                    is = getClass().getResourceAsStream("/" + CukedoctorBaseAction.ALL_DOCUMENTATION);
+                    os = new FileOutputStream(allHtml);
+
+                    int result = IOUtils.copy(is, os);
+                    if (result == -1) {
+                        listener.error("File is too big.");//will never reach here but findbugs forced it...
+                        return false;
+                    }
+                } finally {
+                    if (is != null) {
+                        is.close();
+                    }
+                    if (os != null) {
+                        os.close();
+                    }
                 }
                 cukedoctorProjectAction.setDocumentationPage(CukedoctorBaseAction.ALL_DOCUMENTATION);
                 pool.execute(runAll(features, documentAttributes, outputPath));
@@ -173,9 +190,9 @@ public class CukedoctorPublisher extends Recorder {
 
             pool.shutdown();
             try {
-                if(format.equals(FormatType.HTML)){
-                    pool.awaitTermination(2, TimeUnit.MINUTES);  
-                } else{
+                if (format.equals(FormatType.HTML)) {
+                    pool.awaitTermination(2, TimeUnit.MINUTES);
+                } else {
                     pool.awaitTermination(8, TimeUnit.MINUTES);
                 }
             } catch (final InterruptedException e) {
@@ -187,7 +204,7 @@ public class CukedoctorPublisher extends Recorder {
             logger.println("");
 
         } else {
-            logger.println(String.format("No features Found in %s. %sLiving documentation will not be generated.", computedFeaturesDir,"\n"));
+            logger.println(String.format("No features Found in %s. %sLiving documentation will not be generated.", computedFeaturesDir, "\n"));
 
         }
 
@@ -214,7 +231,7 @@ public class CukedoctorPublisher extends Recorder {
                      * asciidoctor = Asciidoctor.Factory.create();
                      */
                     asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
-					attrs.backend("html5");
+                    attrs.backend("html5");
                     generateDocumentation(features, attrs, outputPath, asciidoctor);
                     attrs.backend("pdf");
                     generateDocumentation(features, attrs, outputPath, asciidoctor);
@@ -261,9 +278,9 @@ public class CukedoctorPublisher extends Recorder {
         asciidoctor.unregisterAllExtensions();
         if (attrs.getBackend().equalsIgnoreCase("pdf")) {
             attrs.pdfTheme(true).docInfo(false);
-         } else {
-           attrs.docInfo(true).pdfTheme(false);
-           new CukedoctorExtensionRegistry().register(asciidoctor);
+        } else {
+            attrs.docInfo(true).pdfTheme(false);
+            new CukedoctorExtensionRegistry().register(asciidoctor);
         }
         CukedoctorConverter converter = Cukedoctor.instance(features, attrs);
         String doc = converter.renderDocumentation();
