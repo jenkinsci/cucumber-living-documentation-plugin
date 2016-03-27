@@ -193,7 +193,7 @@ public class CukedoctorPublisher extends Recorder {
                 if (format.equals(FormatType.HTML)) {
                     pool.awaitTermination(2, TimeUnit.MINUTES);
                 } else {
-                    pool.awaitTermination(8, TimeUnit.MINUTES);
+                    pool.awaitTermination(10, TimeUnit.MINUTES);
                 }
             } catch (final InterruptedException e) {
                 Thread.interrupted();
