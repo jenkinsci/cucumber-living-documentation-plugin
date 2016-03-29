@@ -23,6 +23,20 @@
  */
 package com.github.cukedoctor.jenkins;
 
+import static com.github.cukedoctor.util.Assert.hasText;
+
+import java.io.*;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.io.IOUtils;
+import org.asciidoctor.Asciidoctor;
+import org.asciidoctor.OptionsBuilder;
+import org.asciidoctor.SafeMode;
+import org.kohsuke.stapler.DataBoundConstructor;
+
 import com.github.cukedoctor.Cukedoctor;
 import com.github.cukedoctor.api.CukedoctorConverter;
 import com.github.cukedoctor.api.DocumentAttributes;
@@ -32,6 +46,7 @@ import com.github.cukedoctor.jenkins.model.FormatType;
 import com.github.cukedoctor.jenkins.model.TocType;
 import com.github.cukedoctor.parser.FeatureParser;
 import com.github.cukedoctor.util.FileUtil;
+
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -43,19 +58,6 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
-import org.apache.commons.io.IOUtils;
-import org.asciidoctor.Asciidoctor;
-import org.asciidoctor.OptionsBuilder;
-import org.asciidoctor.SafeMode;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.io.*;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import static com.github.cukedoctor.util.Assert.hasText;
 
 /**
  * @author rmpestano
@@ -217,7 +219,6 @@ public class CukedoctorPublisher extends Recorder {
      * @return
      */
     private String getWorkspaceDir(AbstractBuild<?, ?> build) {
-
         if(build != null &&  build.getWorkspace() != null && build.getWorkspace().getRemote() != null){
             return  build.getWorkspace().getRemote();
         }
