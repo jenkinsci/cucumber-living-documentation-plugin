@@ -111,9 +111,9 @@ public class CukedoctorPublisher extends Recorder {
         logger = listener.getLogger();
         String computedFeaturesDir;
         if (!hasText(featuresDir)) {
-            computedFeaturesDir = build.getWorkspace().getRemote();
+            computedFeaturesDir = getWorkspaceDir(build);
         } else {
-            computedFeaturesDir = new StringBuilder(build.getWorkspace().getRemote()).
+            computedFeaturesDir = new StringBuilder(getWorkspaceDir(build)).
                     append(System.getProperty("file.separator")).append(featuresDir).
                     toString().replaceAll("//", System.getProperty("file.separator"));
         }
@@ -211,6 +211,18 @@ public class CukedoctorPublisher extends Recorder {
         return true;
     }
 
+    /**
+     * mainly for findbugs be happy
+     * @param build
+     * @return
+     */
+    private String getWorkspaceDir(AbstractBuild<?, ?> build) {
+
+        if(build != null &&  build.getWorkspace() != null && build.getWorkspace().getRemote() != null){
+            return  build.getWorkspace().getRemote();
+        }
+      return "";
+    }
 
     /**
      * generates html and pdf documentation 'inlined' otherwise if we execute them in separated threads
