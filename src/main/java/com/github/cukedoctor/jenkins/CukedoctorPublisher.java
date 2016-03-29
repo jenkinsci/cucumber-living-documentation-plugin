@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import hudson.FilePath;
 import org.apache.commons.io.IOUtils;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.OptionsBuilder;
@@ -220,7 +221,11 @@ public class CukedoctorPublisher extends Recorder {
      */
     private String getWorkspaceDir(AbstractBuild<?, ?> build) {
         if(build != null &&  build.getWorkspace() != null && build.getWorkspace().getRemote() != null){
-            return  build.getWorkspace().getRemote();
+            FilePath workspace = build.getWorkspace();
+            //come on find bugs
+            if(workspace != null){
+                return  workspace.getRemote();
+            }
         }
       return "";
     }
