@@ -109,7 +109,6 @@ public class CukedoctorPublisher extends Recorder {
             return false; //it can be null? findbugs...
         }
 
-        final ExecutorService pool = Executors.newFixedThreadPool(4);
         logger = listener.getLogger();
         String computedFeaturesDir;
         if (!hasText(featuresDir)) {
@@ -155,6 +154,7 @@ public class CukedoctorPublisher extends Recorder {
                     docTitle(title);
 
             String outputPath = targetBuildDirectory.getAbsolutePath();
+            final ExecutorService pool = Executors.newFixedThreadPool(4);
             if ("all".equals(format.getFormat())) {
                 File allHtml = new File(outputPath + System.getProperty("file.separator") + CukedoctorBaseAction.ALL_DOCUMENTATION);
                 if (!allHtml.exists()) {
