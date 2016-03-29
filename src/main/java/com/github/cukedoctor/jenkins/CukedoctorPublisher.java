@@ -220,7 +220,7 @@ public class CukedoctorPublisher extends Recorder {
      * @return
      */
     private String getWorkspaceDir(AbstractBuild<?, ?> build) {
-        if(build != null &&  build.getWorkspace() != null && build.getWorkspace().getRemote() != null){
+        if(build != null &&  build.getWorkspace() != null){
             FilePath workspace = build.getWorkspace();
             //come on find bugs
             if(workspace != null){
