@@ -2,10 +2,11 @@
 :sectanchors:
 :sectlink:
 :numbered:
- 
-BDD living documentation on your jenkins build via https://github.com/rmpestano/cukedoctor[Cukedoctor^].
 
 image:https://travis-ci.org/rmpestano/cucumber-living-documentation-plugin.svg[Build Status (Travis CI), link=https://travis-ci.org/rmpestano/cucumber-living-documentation-plugin]
+
+BDD living documentation on your jenkins build via https://github.com/rmpestano/cukedoctor[Cukedoctor^].
+
 
 
 == Introduction
