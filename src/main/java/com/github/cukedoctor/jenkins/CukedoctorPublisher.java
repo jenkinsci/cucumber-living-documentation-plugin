@@ -119,6 +119,7 @@ public class CukedoctorPublisher extends Recorder {
                     append(System.getProperty("file.separator")).append(featuresDir).
                     toString().replaceAll("//", System.getProperty("file.separator"));
         }
+        System.setProperty("INTRO_CHAPTER_DIR",getWorkspaceDir(build));
 
         logger.println("");
         logger.println("Generating living documentation for " + build.getProject().getName() + " with the following arguments: ");
