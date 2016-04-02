@@ -1,4 +1,5 @@
 = Cucumber Living Documentation Plugin for Jenkins
+:toc: preamble
 :sectanchors:
 :sectlink:
 :numbered:
@@ -33,7 +34,7 @@ Cucumber json files samples can be https://github.com/rmpestano/cucumber-living-
 
 
 == Usage
-After instalation the post build action *Living documentation* must be enabled on your jobs:
+After instalation the post build action *Living documentation* must be available on your jobs:
 
 image::config01.png[]
 
@@ -69,7 +70,7 @@ you probably hit https://issues.jenkins-ci.org/browse/JENKINS-31019[issue JENKIN
 
 == Docker
 
-An easy way to test this plugin is using a docker, here are the steps (assumming you have docker installed):
+An easy way to test this plugin is using a docker container, here are the steps (assumming you have docker installed):
 
 . Run the image:
 +
@@ -81,6 +82,7 @@ docker run -it -p 8080:8080 rmpestano/jenkins-living-documentation
 . Configure this svn repository: https://subversion.assembla.com/svn/cucumber-json-files/trunk/ 
 +
 NOTE: This repository contains cucumber json sample files for the living documentation plugin 
+. Add the *Living documentation* _post build action_;
 . Just run the job
 
 TIP: use featuresDir to point to specific json output, eg: /cukedoctor.
