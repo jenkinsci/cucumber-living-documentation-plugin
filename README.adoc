@@ -28,6 +28,8 @@ Here is how a Cucumber feature look like in a documentation:
 
 image::feature.png[]
 
+The feature file for sample above can be https://github.com/rmpestano/dbunit-rules/blob/master/cdi/src/test/resources/features/core/core-seed-database.feature[found here^].
+ 
 For more example documentations http://rmpestano.github.io/cukedoctor/[see here^].
 
 Cucumber json files samples can be https://github.com/rmpestano/cucumber-living-documentation-plugin/tree/master/src/test/resources/json-output[found here^].
