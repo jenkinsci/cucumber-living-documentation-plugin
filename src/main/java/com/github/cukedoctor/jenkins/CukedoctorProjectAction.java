@@ -1,17 +1,18 @@
 package com.github.cukedoctor.jenkins;
 
+import static com.github.cukedoctor.util.Assert.notEmpty;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Comparator;
 
-import com.github.cukedoctor.util.Assert;
 import com.github.cukedoctor.util.FileUtil;
-import hudson.model.*;
 
-import static com.github.cukedoctor.util.Assert.notEmpty;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.ProminentProjectAction;
+import hudson.model.Run;
 
 public class CukedoctorProjectAction extends CukedoctorBaseAction implements ProminentProjectAction {
 

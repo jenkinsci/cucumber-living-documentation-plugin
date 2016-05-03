@@ -26,6 +26,7 @@ package com.github.cukedoctor.jenkins;
 import static com.github.cukedoctor.util.Assert.hasText;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,17 +54,23 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Build;
 import hudson.model.BuildListener;
+import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
+import jenkins.tasks.SimpleBuildStep;
 
 /**
  * @author rmpestano
  */
-public class CukedoctorPublisher extends Recorder {
+public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
     private String featuresDir;
 
@@ -102,28 +109,28 @@ public class CukedoctorPublisher extends Recorder {
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+    public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener)
             throws IOException, InterruptedException {
-
-        if (build == null || build.getWorkspace() == null) {
-            listener.error("Could not resolve build workspace.");
-            return false; //it can be null? findbugs...
-        }
-
+    	  
+    	 FilePath workspaceJsonSourceDir;//most of the time on slave
+    	 FilePath workspaceJsonTargetDir;//always on master
+         if (!hasText(featuresDir)) {
+             workspaceJsonSourceDir = workspace;
+             workspaceJsonTargetDir = getMasterWorkspaceDir(build);
+         } else {
+             workspaceJsonSourceDir = new FilePath(workspace, featuresDir);
+             workspaceJsonTargetDir = new FilePath(getMasterWorkspaceDir(build), featuresDir);
+         }
+    	
+      
         logger = listener.getLogger();
-        String computedFeaturesDir;
-        if (!hasText(featuresDir)) {
-            computedFeaturesDir = getWorkspaceDir(build);
-        } else {
-            computedFeaturesDir = new StringBuilder(getWorkspaceDir(build)).
-                    append(System.getProperty("file.separator")).append(featuresDir).
-                    toString().replaceAll("//", System.getProperty("file.separator"));
-        }
-        System.setProperty("INTRO_CHAPTER_DIR",getWorkspaceDir(build));
+        workspaceJsonSourceDir.copyRecursiveTo("**/*.json,**/cukedoctor-intro.adoc", workspaceJsonTargetDir);
+        
+        System.setProperty("INTRO_CHAPTER_DIR",workspaceJsonTargetDir.getRemote());
 
         logger.println("");
-        logger.println("Generating living documentation for " + build.getProject().getName() + " with the following arguments: ");
-        logger.println("Features dir: " + computedFeaturesDir);
+        logger.println("Generating living documentation for " + cukedoctorProjectAction.getTitle() + " with the following arguments: ");
+        logger.println("Features dir: " + workspaceJsonSourceDir.getRemote());
         logger.println("Format: " + format.getFormat());
         logger.println("Toc: " + toc.getToc());
         logger.println("Title: " + title);
@@ -131,7 +138,8 @@ public class CukedoctorPublisher extends Recorder {
         logger.println("Section anchors: " + Boolean.toString(sectAnchors));
         logger.println("");
 
-        List<Feature> features = FeatureParser.findAndParse(computedFeaturesDir);
+        Result result = Result.SUCCESS;
+        List<Feature> features = FeatureParser.findAndParse(workspaceJsonTargetDir.getRemote());
         if (!features.isEmpty()) {
             if (!hasText(title)) {
                 title = "Living Documentation";
@@ -144,7 +152,7 @@ public class CukedoctorPublisher extends Recorder {
                 boolean created = targetBuildDirectory.mkdirs();
                 if (!created) {
                     listener.error("Could not create file at location: " + targetBuildDirectory.getAbsolutePath());
-                    return false;
+                    result = Result.UNSTABLE;
                 }
             }
 
@@ -163,7 +171,7 @@ public class CukedoctorPublisher extends Recorder {
                     boolean created = allHtml.createNewFile();
                     if (!created) {
                         listener.error("Could not create file at location: " + allHtml.getAbsolutePath());
-                        return false;
+                        result = Result.UNSTABLE;
                     }
                 }
                 InputStream is = null;
@@ -172,10 +180,10 @@ public class CukedoctorPublisher extends Recorder {
                     is = getClass().getResourceAsStream("/" + CukedoctorBaseAction.ALL_DOCUMENTATION);
                     os = new FileOutputStream(allHtml);
 
-                    int result = IOUtils.copy(is, os);
-                    if (result == -1) {
+                    int copyResult = IOUtils.copy(is, os);
+                    if (copyResult == -1) {
                         listener.error("File is too big.");//will never reach here but findbugs forced it...
-                        return false;
+                        result = Result.UNSTABLE;
                     }
                 } finally {
                     if (is != null) {
@@ -195,24 +203,27 @@ public class CukedoctorPublisher extends Recorder {
             pool.shutdown();
             try {
                 if (format.equals(FormatType.HTML)) {
-                    pool.awaitTermination(2, TimeUnit.MINUTES);
+                    pool.awaitTermination(5, TimeUnit.MINUTES);
                 } else {
-                    pool.awaitTermination(10, TimeUnit.MINUTES);
+                    pool.awaitTermination(15, TimeUnit.MINUTES);
                 }
             } catch (final InterruptedException e) {
                 Thread.interrupted();
                 listener.error("Your documentation is taking too long to be generated. Halting the generation now to not throttle Jenkins.");
-                return true;
+                result = Result.FAILURE;
             }
-            listener.hyperlink("../" + CukedoctorBaseAction.BASE_URL, "Documentation generated successfully!");
-            logger.println("");
+            
+            if(result.equals(Result.SUCCESS)){
+           	 listener.hyperlink("../" + CukedoctorBaseAction.BASE_URL, "Documentation generated successfully!");
+                logger.println("");
+           }
 
         } else {
-            logger.println(String.format("No features Found in %s. %sLiving documentation will not be generated.", computedFeaturesDir, "\n"));
+            logger.println(String.format("No features Found in %s. %sLiving documentation will not be generated.", workspaceJsonTargetDir.getRemote(), "\n"));
 
         }
-
-        return true;
+       
+        build.setResult(result);
     }
 
     /**
@@ -220,15 +231,12 @@ public class CukedoctorPublisher extends Recorder {
      * @param build
      * @return
      */
-    private String getWorkspaceDir(AbstractBuild<?, ?> build) {
-        if(build != null &&  build.getWorkspace() != null){
-            FilePath workspace = build.getWorkspace();
-            //come on find bugs
-            if(workspace != null){
-                return  workspace.getRemote();
-            }
+    private FilePath getMasterWorkspaceDir(Run<?, ?> build) {
+        if(build != null &&  build.getRootDir() != null){
+            return new FilePath(build.getRootDir());
+        } else{
+        	return new FilePath(Paths.get("").toFile());
         }
-      return "";
     }
 
     /**
