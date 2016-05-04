@@ -25,14 +25,18 @@ package com.github.cukedoctor.jenkins;
 
 import static com.github.cukedoctor.util.Assert.hasText;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import hudson.FilePath;
 import org.apache.commons.io.IOUtils;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.OptionsBuilder;
@@ -50,16 +54,13 @@ import com.github.cukedoctor.parser.FeatureParser;
 import com.github.cukedoctor.util.FileUtil;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Build;
-import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
@@ -124,7 +125,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
     	
       
         logger = listener.getLogger();
-        workspaceJsonSourceDir.copyRecursiveTo("**/*.json,**/cukedoctor-intro.adoc", workspaceJsonTargetDir);
+        workspaceJsonSourceDir.copyRecursiveTo("**/*.json,**/cukedoctor-intro.adoc,**/cukedoctor.properties", workspaceJsonTargetDir);
         
         System.setProperty("INTRO_CHAPTER_DIR",workspaceJsonTargetDir.getRemote());
 
