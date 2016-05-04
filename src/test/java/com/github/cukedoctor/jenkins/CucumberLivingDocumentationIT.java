@@ -11,7 +11,6 @@ import com.github.cukedoctor.jenkins.model.TocType;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Node;
 import hudson.slaves.DumbSlave;
 
 public class CucumberLivingDocumentationIT {
