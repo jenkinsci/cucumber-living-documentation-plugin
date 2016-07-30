@@ -9,7 +9,7 @@
         <relativePath />
     </parent>
     <artifactId>cucumber-living-documentation</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.4</version>
     <packaging>hpi</packaging>
 
     <properties>
@@ -51,7 +51,7 @@
         <connection>scm:git:ssh://github.com/jenkinsci/cucumber-living-documentation-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/cucumber-living-documentation-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/cucumber-living-documentation-plugin</url>
-      <tag>HEAD</tag>
+      <tag>cucumber-living-documentation-1.0.4</tag>
   </scm>
 
     <dependencies>
