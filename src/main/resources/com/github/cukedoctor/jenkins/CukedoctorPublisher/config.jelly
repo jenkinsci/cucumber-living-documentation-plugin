@@ -23,6 +23,21 @@
           <f:entry  title="Section anchors" description="Enables anchors to make sections bookmarkable.">
                <f:checkbox field="sectAnchors" default="true"/>
            </f:entry>
+           <f:entry title="Hide features section" description="Removes 'features' section.">
+               <f:checkbox field="hideFeaturesSection"  default="false"/>
+           </f:entry>
+            <f:entry title="Hide summary" description="Removes summary from resulting documentation.">
+                <f:checkbox field="hideSummary"  default="false"/>
+            </f:entry>
+            <f:entry title="Hide scenario keyword" description="Removes 'scenario' and 'scenario outline' prefix from scenario name.">
+                <f:checkbox field="hideScenarioKeyword"  default="false"/>
+            </f:entry>
+            <f:entry title="Hide step time" description="Removes step time .">
+                <f:checkbox field="hideStepTime"  default="false"/>
+            </f:entry>
+            <f:entry title="Hide tags" description="Removes tags..">
+                <f:checkbox field="hideTags"  default="false"/>
+            </f:entry>
       </f:advanced>
    </f:section>
 </j:jelly>

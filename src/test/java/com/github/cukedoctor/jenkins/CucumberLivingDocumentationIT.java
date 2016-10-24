@@ -29,7 +29,7 @@ public class CucumberLivingDocumentationIT {
 				CucumberLivingDocumentationIT.class.getResource("/json-output/asciidoctor/asciidoctor.json").toURI().toURL());
 		
 		project.setScm(scm);
-		CukedoctorPublisher publisher = new CukedoctorPublisher(null, FormatType.HTML, TocType.RIGHT, true, true, "Living Documentation");
+		CukedoctorPublisher publisher = new CukedoctorPublisher(null, FormatType.HTML, TocType.RIGHT, true, true, "Living Documentation",false,false,false,false,false);
 		project.getPublishersList().add(publisher);
 		project.save();
 
@@ -55,7 +55,7 @@ public class CucumberLivingDocumentationIT {
 				CucumberLivingDocumentationIT.class.getResource("/json-output/asciidoctor/asciidoctor.json").toURI().toURL());
 		
 		project.setScm(scm);
-		CukedoctorPublisher publisher = new CukedoctorPublisher(null, FormatType.HTML, TocType.RIGHT, true, true, "Living Documentation");
+		CukedoctorPublisher publisher = new CukedoctorPublisher(null, FormatType.HTML, TocType.RIGHT, true, true, "Living Documentation",false,false,false,false,false);
 		project.getPublishersList().add(publisher);
 		project.save();
 

@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.github.cukedoctor.config.GlobalConfig;
 import org.apache.commons.io.IOUtils;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.OptionsBuilder;
@@ -85,20 +86,36 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
     private String title;
 
+    private final boolean hideFeaturesSection;
+
+    private final boolean hideSummary;
+
+    private final boolean hideScenarioKeyword;
+
+    private final boolean hideStepTime;
+
+    private final boolean hideTags;
+
+
     private CukedoctorProjectAction cukedoctorProjectAction;
 
     private PrintStream logger;
 
 
     @DataBoundConstructor
-    public CukedoctorPublisher(String featuresDir, FormatType format, TocType toc, boolean numbered, boolean sectAnchors, String title) {
+    public CukedoctorPublisher(String featuresDir, FormatType format, TocType toc, boolean numbered, boolean sectAnchors, String title, boolean hideFeaturesSection, boolean hideSummary,
+                               boolean hideScenarioKeyword, boolean hideStepTime, boolean hideTags) {
         this.featuresDir = featuresDir;
         this.numbered = numbered;
         this.toc = toc;
         this.format = format;
         this.sectAnchors = sectAnchors;
         this.title = title;
-
+        this.hideFeaturesSection = hideFeaturesSection;
+        this.hideSummary = hideSummary;
+        this.hideScenarioKeyword = hideScenarioKeyword;
+        this.hideStepTime = hideStepTime;
+        this.hideTags = hideTags;
     }
 
     @Override
@@ -137,6 +154,11 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         logger.println("Title: " + title);
         logger.println("Numbered: " + Boolean.toString(numbered));
         logger.println("Section anchors: " + Boolean.toString(sectAnchors));
+        logger.println("Hide features section: " + Boolean.toString(hideFeaturesSection));
+        logger.println("Hide summary: " + Boolean.toString(hideSummary));
+        logger.println("Hide scenario keyword: " + Boolean.toString(hideScenarioKeyword));
+        logger.println("Hide step time: " + Boolean.toString(hideStepTime));
+        logger.println("Hide tags: " + Boolean.toString(hideTags));
         logger.println("");
 
         Result result = Result.SUCCESS;
@@ -157,12 +179,24 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                 }
             }
 
-            DocumentAttributes documentAttributes = new DocumentAttributes().
+            GlobalConfig globalConfig = GlobalConfig.getInstance();
+            DocumentAttributes documentAttributes = globalConfig.getDocumentAttributes().
                     backend(format.getFormat()).
                     toc(toc.getToc()).
                     numbered(numbered).
                     sectAnchors(sectAnchors).
                     docTitle(title);
+
+            globalConfig.getLayoutConfig().setHideFeaturesSection(hideFeaturesSection);
+
+            globalConfig.getLayoutConfig().setHideSummarySection(hideSummary);
+
+            globalConfig.getLayoutConfig().setHideScenarioKeyword(hideScenarioKeyword);
+
+            globalConfig.getLayoutConfig().setHideStepTime(hideStepTime);
+
+            globalConfig.getLayoutConfig().setHideTags(hideTags);
+
 
             String outputPath = targetBuildDirectory.getAbsolutePath();
             final ExecutorService pool = Executors.newFixedThreadPool(4);
@@ -217,7 +251,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
             if(result.equals(Result.SUCCESS)){
            	 listener.hyperlink("../" + CukedoctorBaseAction.BASE_URL, "Documentation generated successfully!");
                 logger.println("");
-           }
+            }
 
         } else {
             logger.println(String.format("No features Found in %s. %sLiving documentation will not be generated.", workspaceJsonTargetDir.getRemote(), "\n"));
@@ -383,6 +417,24 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         return title;
     }
 
+    public boolean isHideFeaturesSection() {
+        return hideFeaturesSection;
+    }
 
+    public boolean isHideSummary() {
+        return hideSummary;
+    }
+
+    public boolean isHideScenarioKeyword() {
+        return hideScenarioKeyword;
+    }
+
+    public boolean isHideStepTime() {
+        return hideStepTime;
+    }
+
+    public boolean isHideTags() {
+        return hideTags;
+    }
 }
 
