@@ -9,26 +9,23 @@ import java.nio.file.Paths;
 
 import com.github.cukedoctor.util.FileUtil;
 
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.ProminentProjectAction;
-import hudson.model.Run;
+import hudson.model.*;
 
 public class CukedoctorProjectAction extends CukedoctorBaseAction implements ProminentProjectAction {
 
     private static final java.lang.String HTML_DOCUMENTATION = "documentation.html";
     private static final java.lang.String PDF_DOCUMENTATION = "documentation.pdf";
-    private final AbstractProject<?, ?> project;
+    private final Job<?, ?> job;
 
     private String jobName;
 
-    public CukedoctorProjectAction(AbstractProject<?, ?> project) {
-        this.project = project;
+    public CukedoctorProjectAction(Job<?, ?> job) {
+        this.job = job;
     }
 
     public String job(){
         if(jobName == null){
-            jobName = project.getName();
+            jobName = job.getName();
         }
         return jobName;
     }
@@ -39,8 +36,8 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
      * @return <code>true</code> if both html and pdf documentation is present on last build <code>false</code> otherwise. 
      */
     public boolean showSidebarPanel() {
-        if(documentationPage != null && notEmpty(project.getBuilds())) {
-            AbstractBuild<?,?> lastBuild = project.getBuilds().getLastBuild();
+        if(documentationPage != null && notEmpty(job.getBuilds())) {
+            Run<?, ?> lastBuild = job.getBuilds().getLastBuild();
             final Path BUILD_PATH = Paths.get(lastBuild.getRootDir() + System.getProperty("file.separator") + BASE_URL);
 
             if(Files.exists(BUILD_PATH)){
@@ -57,7 +54,7 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
 
     @Override
     protected File dir() {
-        Run<?, ?> run = this.project.getLastCompletedBuild();
+        Run<?, ?> run = this.job.getLastCompletedBuild();
         if (run != null) {
             File archiveDir = getBuildArchiveDir(run);
 
@@ -70,7 +67,7 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
     }
 
     private File getProjectArchiveDir() {
-        return new File(project.getRootDir(), CukedoctorBaseAction.BASE_URL);
+        return new File(job.getRootDir(), CukedoctorBaseAction.BASE_URL);
     }
 
     /** Gets the directory where the HTML report is stored for the given build. */
@@ -80,6 +77,6 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
 
     @Override
     protected String getTitle() {
-        return this.project.getDisplayName();
+        return this.job.getDisplayName();
     }
 }
