@@ -96,9 +96,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
     private final boolean hideTags;
 
-
-    private CukedoctorProjectAction cukedoctorProjectAction;
-
     private PrintStream logger;
 
 
@@ -116,14 +113,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         this.hideScenarioKeyword = hideScenarioKeyword;
         this.hideStepTime = hideStepTime;
         this.hideTags = hideTags;
-    }
-
-    @Override
-    public Action getProjectAction(AbstractProject<?, ?> project) {
-        if (cukedoctorProjectAction == null) {
-            cukedoctorProjectAction = new CukedoctorProjectAction(project);
-        }
-        return cukedoctorProjectAction;
     }
 
     @Override
@@ -147,7 +136,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         System.setProperty("INTRO_CHAPTER_DIR",workspaceJsonTargetDir.getRemote());
 
         logger.println("");
-        logger.println("Generating living documentation for " + cukedoctorProjectAction.getTitle() + " with the following arguments: ");
+        logger.println("Generating living documentation for " + build.getFullDisplayName() + " with the following arguments: ");
         logger.println("Features dir: " + workspaceJsonSourceDir.getRemote());
         logger.println("Format: " + format.getFormat());
         logger.println("Toc: " + toc.getToc());
@@ -199,6 +188,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
 
             String outputPath = targetBuildDirectory.getAbsolutePath();
+            CukedoctorBuildAction action =  new CukedoctorBuildAction(build);
             final ExecutorService pool = Executors.newFixedThreadPool(4);
             if ("all".equals(format.getFormat())) {
                 File allHtml = new File(outputPath + System.getProperty("file.separator") + CukedoctorBaseAction.ALL_DOCUMENTATION);
@@ -228,13 +218,15 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                         os.close();
                     }
                 }
-                cukedoctorProjectAction.setDocumentationPage(CukedoctorBaseAction.ALL_DOCUMENTATION);
+
+                action.setDocumentationPage(CukedoctorBaseAction.ALL_DOCUMENTATION);
                 pool.execute(runAll(features, documentAttributes, outputPath));
             } else {
-                cukedoctorProjectAction.setDocumentationPage("documentation." + format.getFormat());
+                action.setDocumentationPage("documentation." + format.getFormat());
                 pool.execute(run(features, documentAttributes, outputPath));
             }
 
+            build.addAction(action);
             pool.shutdown();
             try {
                 if (format.equals(FormatType.HTML)) {
@@ -257,7 +249,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
             logger.println(String.format("No features Found in %s. %sLiving documentation will not be generated.", workspaceJsonTargetDir.getRemote(), "\n"));
 
         }
-       
+
         build.setResult(result);
     }
 
