@@ -69,6 +69,12 @@ java.lang.ClassCircularityError: org/jruby/RubyClass
 you probably hit https://issues.jenkins-ci.org/browse/JENKINS-31019[issue JENKINS-31019], to solve that you need to upgrade your installation to *v1.640* or newer.
 ====
 
+== PDF output
+
+Unfortunately Jenkins runtime uses a very old JRuby runtime (https://github.com/asciidoctor/asciidoctorj/issues/442[see details here^]) and pdf generation will be extremely slow.
+
+If you really need the PDF output an alternative is to use https://github.com/rmpestano/cukedoctor#maven-plugin[Cukedoctor maven plugin^] or https://github.com/rmpestano/cukedoctor#8-standalone-jar-aka-cli[Cukedoctor cli^] but none will link the documentation into Jenkins job.
+
 == Docker
 
 An easy way to test this plugin is using a docker container, here are the steps (assumming you have docker installed):
