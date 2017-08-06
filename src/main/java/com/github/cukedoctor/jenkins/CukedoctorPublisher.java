@@ -131,7 +131,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
     	
       
         logger = listener.getLogger();
-        workspaceJsonSourceDir.copyRecursiveTo("**/*.json,**/cukedoctor-intro.adoc,**/cukedoctor.properties", workspaceJsonTargetDir);
+        workspaceJsonSourceDir.copyRecursiveTo("**/*.json,**/cukedoctor-intro.adoc,**/cukedoctor.properties,**/cukedoctor.css,**/cukedoctor-pdf.yml", workspaceJsonTargetDir);
         
         System.setProperty("INTRO_CHAPTER_DIR",workspaceJsonTargetDir.getRemote());
         System.setProperty("CUKEDOCTOR_CUSTOMIZATION_DIR",workspaceJsonTargetDir.getRemote());
