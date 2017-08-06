@@ -69,6 +69,16 @@ java.lang.ClassCircularityError: org/jruby/RubyClass
 you probably hit https://issues.jenkins-ci.org/browse/JENKINS-31019[issue JENKINS-31019], to solve that you need to upgrade your installation to *v1.640* or newer.
 ====
 
+== Jenkins pipeline step
+
+Following is an example of pipeline step using this plugin:
+
+----
+node {
+    step([$class: 'CukedoctorPublisher', featuresDir: '', format: 'HTML', hideFeaturesSection: false, hideScenarioKeyword: false, hideStepTime: false, hideSummary: false, hideTags: false, numbered: true, sectAnchors: true, title: 'Living Documentation', toc: 'RIGHT'])
+  }
+----
+
 == PDF output
 
 Unfortunately Jenkins runtime uses a very old JRuby runtime (https://github.com/asciidoctor/asciidoctorj/issues/442[see details here^]) and pdf generation will be extremely slow.
