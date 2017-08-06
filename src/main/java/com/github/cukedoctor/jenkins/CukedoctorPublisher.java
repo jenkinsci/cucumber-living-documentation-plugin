@@ -134,6 +134,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         workspaceJsonSourceDir.copyRecursiveTo("**/*.json,**/cukedoctor-intro.adoc,**/cukedoctor.properties", workspaceJsonTargetDir);
         
         System.setProperty("INTRO_CHAPTER_DIR",workspaceJsonTargetDir.getRemote());
+        System.setProperty("CUKEDOCTOR_CUSTOMIZATION_DIR",workspaceJsonTargetDir.getRemote());
 
         logger.println("");
         logger.println("Generating living documentation for " + build.getFullDisplayName() + " with the following arguments: ");
@@ -330,10 +331,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
     protected synchronized void generateDocumentation(List<Feature> features, DocumentAttributes attrs, String outputPath, Asciidoctor asciidoctor) {
         asciidoctor.unregisterAllExtensions();
-        if (attrs.getBackend().equalsIgnoreCase("pdf")) {
-            attrs.pdfTheme(true).docInfo(false);
-        } else {
-            attrs.docInfo(true).pdfTheme(false);
+        if (!attrs.getBackend().equalsIgnoreCase("pdf")) {
             new CukedoctorExtensionRegistry().register(asciidoctor);
         }
         CukedoctorConverter converter = Cukedoctor.instance(features, attrs);
