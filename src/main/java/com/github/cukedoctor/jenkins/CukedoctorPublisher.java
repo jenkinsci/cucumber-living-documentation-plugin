@@ -190,8 +190,10 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
             String outputPath = targetBuildDirectory.getAbsolutePath();
             CukedoctorBuildAction action =  new CukedoctorBuildAction(build);
+            String documentationLink = "";
             final ExecutorService pool = Executors.newFixedThreadPool(4);
             if ("all".equals(format.getFormat())) {
+                documentationLink = "../" + CukedoctorBaseAction.BASE_URL+"/"+CukedoctorBaseAction.ALL_DOCUMENTATION;
                 File allHtml = new File(outputPath + System.getProperty("file.separator") + CukedoctorBaseAction.ALL_DOCUMENTATION);
                 if (!allHtml.exists()) {
                     boolean created = allHtml.createNewFile();
@@ -223,6 +225,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                 action.setDocumentationPage(CukedoctorBaseAction.ALL_DOCUMENTATION);
                 pool.execute(runAll(features, documentAttributes, outputPath));
             } else {
+                documentationLink = "../" + CukedoctorBaseAction.BASE_URL+"/documentation." + format.getFormat();
                 action.setDocumentationPage("documentation." + format.getFormat());
                 pool.execute(run(features, documentAttributes, outputPath));
             }
@@ -242,7 +245,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
             }
             
             if(result.equals(Result.SUCCESS)){
-           	 listener.hyperlink("../" + CukedoctorBaseAction.BASE_URL, "Documentation generated successfully!");
+           	 listener.hyperlink(documentationLink, "Documentation generated successfully!");
                 logger.println("");
             }
 
