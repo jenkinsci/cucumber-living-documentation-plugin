@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.SubversionSCM" plugin="subversion@1.45">
+    <locations>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>https://subversion.assembla.com/svn/cucumber-json-files/trunk</remote>
+        <local>.</local>
+        <depthOption>infinity</depthOption>
+        <ignoreExternalsOption>false</ignoreExternalsOption>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+    </locations>
+    <excludedRegions></excludedRegions>
+    <includedRegions></includedRegions>
+    <excludedUsers></excludedUsers>
+    <excludedRevprop></excludedRevprop>
+    <excludedCommitMessages></excludedCommitMessages>
+    <workspaceUpdater class="hudson.scm.subversion.UpdateUpdater"/>
+    <ignoreDirPropChanges>false</ignoreDirPropChanges>
+    <filterChangelog>false</filterChangelog>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders/>
+  <publishers>
+    <com.github.cukedoctor.jenkins.CukedoctorPublisher plugin="cucumber-living-documentation@1.0.9-SNAPSHOT">
+      <featuresDir>cukedoctor</featuresDir>
+      <numbered>true</numbered>
+      <sectAnchors>true</sectAnchors>
+      <toc>RIGHT</toc>
+      <format>ALL</format>
+      <title>Living Documentation</title>
+      <hideFeaturesSection>false</hideFeaturesSection>
+      <hideSummary>false</hideSummary>
+      <hideScenarioKeyword>false</hideScenarioKeyword>
+      <hideStepTime>false</hideStepTime>
+      <hideTags>false</hideTags>
+    </com.github.cukedoctor.jenkins.CukedoctorPublisher>
+  </publishers>
+  <buildWrappers/>
+</project>
