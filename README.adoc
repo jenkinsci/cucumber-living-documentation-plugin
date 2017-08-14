@@ -89,7 +89,7 @@ node {
 }
 ----
 
-Parameters should be declared as `key`:`'value'` as example below:
+Parameters should be declared as `key`: `'value'` as example below:
 
 ----
 node {
