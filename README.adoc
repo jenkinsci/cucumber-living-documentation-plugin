@@ -80,6 +80,24 @@ node {
 }
 ----
 
+Since version _1.0.10_ it is possible to use the *livingDocs* shortcut in pipeline DSL:
+
+----
+node {
+    svn 'https://subversion.assembla.com/svn/cucumber-json-files/trunk'
+    livingDocs()
+}
+----
+
+Parameters should be declared as `key`:`'value'` as example below:
+
+----
+node {
+    svn 'https://subversion.assembla.com/svn/cucumber-json-files/trunk'
+    livingDocs(featuresDir:'cukedoctor')
+}
+----
+
 == PDF output
 
 Unfortunately Jenkins runtime uses a very old JRuby runtime (https://github.com/asciidoctor/asciidoctorj/issues/442[see details here^]) and pdf generation will be extremely slow.
