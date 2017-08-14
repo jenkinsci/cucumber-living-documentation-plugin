@@ -42,6 +42,8 @@ import org.apache.commons.io.IOUtils;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.SafeMode;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import com.github.cukedoctor.Cukedoctor;
@@ -53,12 +55,12 @@ import com.github.cukedoctor.jenkins.model.FormatType;
 import com.github.cukedoctor.jenkins.model.TocType;
 import com.github.cukedoctor.parser.FeatureParser;
 import com.github.cukedoctor.util.FileUtil;
-
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundSetter;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
-import hudson.model.Action;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -76,38 +78,38 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
     private String featuresDir;
 
-    private final boolean numbered;
+    private  boolean numbered;
 
-    private final boolean sectAnchors;
+    private  boolean sectAnchors;
 
-    private final TocType toc;
+    private TocType toc;
 
-    private final FormatType format;
+    private FormatType format;
 
     private String title;
 
-    private final boolean hideFeaturesSection;
+    private boolean hideFeaturesSection;
 
-    private final boolean hideSummary;
+    private boolean hideSummary;
 
-    private final boolean hideScenarioKeyword;
+    private boolean hideScenarioKeyword;
 
-    private final boolean hideStepTime;
+    private boolean hideStepTime;
 
-    private final boolean hideTags;
+    private boolean hideTags;
 
     private PrintStream logger;
 
 
     @DataBoundConstructor
-    public CukedoctorPublisher(String featuresDir, FormatType format, TocType toc, boolean numbered, boolean sectAnchors, String title, boolean hideFeaturesSection, boolean hideSummary,
+    public CukedoctorPublisher(String featuresDir, FormatType format, TocType toc, Boolean numbered, Boolean sectAnchors, String title, boolean hideFeaturesSection, boolean hideSummary,
                                boolean hideScenarioKeyword, boolean hideStepTime, boolean hideTags) {
         this.featuresDir = featuresDir;
-        this.numbered = numbered;
-        this.toc = toc;
-        this.format = format;
-        this.sectAnchors = sectAnchors;
-        this.title = title;
+        this.numbered = numbered == null ? Boolean.TRUE : numbered;
+        this.toc = toc == null ? TocType.RIGHT : toc;
+        this.format = format == null ? FormatType.HTML : format;
+        this.sectAnchors = sectAnchors == null ? Boolean.TRUE : sectAnchors;
+        this.title = hasText(title) ? title : "Living Documentation";
         this.hideFeaturesSection = hideFeaturesSection;
         this.hideSummary = hideSummary;
         this.hideScenarioKeyword = hideScenarioKeyword;
@@ -328,7 +330,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
             }
         };
 
-
     }
 
 
@@ -349,7 +350,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
     }
 
 
-    @Extension
+    @Extension @Symbol("livingDocs")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
 
@@ -366,6 +367,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
             return "Living documentation";
         }
 
+        @Restricted(NoExternalUse.class) // Only for UI calls
         public ListBoxModel doFillTocItems() {
             ListBoxModel items = new ListBoxModel();
             for (TocType tocType : TocType.values()) {
@@ -374,6 +376,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
             return items;
         }
 
+        @Restricted(NoExternalUse.class) // Only for UI calls
         public ListBoxModel doFillFormatItems() {
             ListBoxModel items = new ListBoxModel();
             for (FormatType formatType : FormatType.values()) {
@@ -428,6 +431,62 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
     public boolean isHideTags() {
         return hideTags;
+    }
+
+
+    @DataBoundSetter
+    public void setFeaturesDir(String featuresDir) {
+        this.featuresDir = featuresDir;
+    }
+
+    @DataBoundSetter
+    public void setNumbered(boolean numbered) {
+        this.numbered = numbered;
+    }
+
+    @DataBoundSetter
+    public void setSectAnchors(boolean sectAnchors) {
+        this.sectAnchors = sectAnchors;
+    }
+
+    @DataBoundSetter
+    public void setToc(TocType toc) {
+        this.toc = toc;
+    }
+
+    @DataBoundSetter
+    public void setFormat(FormatType format) {
+        this.format = format;
+    }
+
+    @DataBoundSetter
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    @DataBoundSetter
+    public void setHideFeaturesSection(boolean hideFeaturesSection) {
+        this.hideFeaturesSection = hideFeaturesSection;
+    }
+
+    @DataBoundSetter
+    public void setHideSummary(boolean hideSummary) {
+        this.hideSummary = hideSummary;
+    }
+
+    @DataBoundSetter
+    public void setHideScenarioKeyword(boolean hideScenarioKeyword) {
+        this.hideScenarioKeyword = hideScenarioKeyword;
+    }
+
+    @DataBoundSetter
+    public void setHideStepTime(boolean hideStepTime) {
+        this.hideStepTime = hideStepTime;
+    }
+
+    @DataBoundSetter
+    public void setHideTags(boolean hideTags) {
+        this.hideTags = hideTags;
     }
 }
 

@@ -1,0 +1,22 @@
+Started by user [8mha:AAAAlh+LCAAAAAAAAP9b85aBtbiIQTGjNKU4P08vOT+vOD8nVc83PyU1x6OyILUoJzMv2y+/JJUBAhiZGBgqihhk0NSjKDWzXb3RdlLBUSYGJk8GtpzUvPSSDB8G5tKinBIGIZ+sxLJE/ZzEvHT94JKizLx0a6BxUmjGOUNodHsLgAzOEgYu/dLi1CL9vNKcHACFIKlWvwAAAA==[0manonymous
+Building in workspace /home/rmpestano/projects/cucumber-living-documentation-plugin/work/jobs/test/workspace
+Updating https://subversion.assembla.com/svn/cucumber-json-files/trunk at revision '2017-08-06T23:07:22.359 -0300'
+At revision 6
+no change for https://subversion.assembla.com/svn/cucumber-json-files/trunk since the previous build
+
+Generating living documentation for test #10 with the following arguments: 
+Features dir: /home/rmpestano/projects/cucumber-living-documentation-plugin/work/jobs/test/workspace/cukedoctor
+Format: html
+Toc: right
+Title: Living Documentation
+Numbered: true
+Section anchors: true
+Hide features section: false
+Hide summary: false
+Hide scenario keyword: false
+Hide step time: false
+Hide tags: false
+
+Found 4 feature(s)...
+[8mha:AAAAph+LCAAAAAAAAP9b85aBtbiIQSajNKU4P08vOT+vOD8nVc+jsiC1KCczL9svvyTVzHb1RttJBUeZGJg8GdhyUvPSSzJ8GJhLi3JKGIR8shLLEvVzEvPS9YNLijLz0q0rihik0IxzhtAgwxgggJGJgaGiAMhQLWEw1tPTTy5NLs1NSi3SzcksAxqim5IP5KfmlSSWZObn6aPw9DJKcnMA2YDmW7gAAAA=[0mDocumentation generated successfully!
+Finished: SUCCESS
