@@ -98,6 +98,22 @@ node {
 }
 ----
 
+Or using the https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline^]:
+
+----
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                svn 'https://subversion.assembla.com/svn/cucumber-json-files/trunk'
+                livingDocs(featuresDir:'cukedoctor')
+            }
+        }
+    }
+}
+----
+
 == PDF output
 
 Unfortunately Jenkins runtime uses a very old JRuby runtime (https://github.com/asciidoctor/asciidoctorj/issues/442[see details here^]) and pdf generation will be extremely slow.
