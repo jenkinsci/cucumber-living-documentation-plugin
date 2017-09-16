@@ -4,7 +4,7 @@
 :sectlink:
 :numbered:
 
-image:https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/cucumber-living-documentation-plugin[Build Status (Travis CI), link=https://jenkins.ci.cloudbees.com/job/plugins/job/cucumber-living-documentation-plugin/]
+image:https://travis-ci.org/jenkinsci/cucumber-living-documentation-plugin.svg[Build Status (Travis CI), link=https://travis-ci.org/jenkinsci/cucumber-living-documentation-plugin]
 
 BDD living documentation on your jenkins build via https://github.com/rmpestano/cukedoctor[Cukedoctor^].
 
