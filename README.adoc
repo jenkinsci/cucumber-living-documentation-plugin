@@ -5,8 +5,9 @@
 :numbered:
 
 image:https://travis-ci.org/jenkinsci/cucumber-living-documentation-plugin.svg[Build Status (Travis CI), link=https://travis-ci.org/jenkinsci/cucumber-living-documentation-plugin]
+image:https://coveralls.io/repos/jenkinsci/cucumber-living-documentation-plugin/badge.svg?branch=master&service=github[Coverage, link=https://coveralls.io/r/jenkinsci/cucumber-living-documentation-plugin]
 
-BDD living documentation on your jenkins build via https://github.com/rmpestano/cukedoctor[Cukedoctor^].
+BDD living documentation on your jenkins build via https://github.com/jenkinsci/cucumber-living-documentation-plugin[Cukedoctor^].
 
 
 
