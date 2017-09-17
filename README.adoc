@@ -117,10 +117,13 @@ pipeline {
 
 == PDF output
 
-[line-through]#Unfortunately Jenkins runtime uses a very old JRuby runtime (https://github.com/asciidoctor/asciidoctorj/issues/442[see details here^]) and pdf generation will be extremely slow.#
+++++
+<p style="text-decoration:line-through">
+Unfortunately Jenkins runtime uses a very old JRuby runtime (https://github.com/asciidoctor/asciidoctorj/issues/442[see details here^]) and pdf generation will be extremely slow.
 
-[line-through]#If you really need the PDF output an alternative is to use https://github.com/rmpestano/cukedoctor#maven-plugin[Cukedoctor maven plugin^] or https://github.com/rmpestano/cukedoctor#8-standalone-jar-aka-cli[Cukedoctor cli^] but none will link the documentation into Jenkins job.#
-
+If you really need the PDF output an alternative is to use https://github.com/rmpestano/cukedoctor#maven-plugin[Cukedoctor maven plugin^] or https://github.com/rmpestano/cukedoctor#8-standalone-jar-aka-cli[Cukedoctor cli^] but none will link the documentation into Jenkins job.
+</p>
+++++
 Since https://github.com/jenkinsci/cucumber-living-documentation-plugin/releases/tag/1.0.11[version 1.0.11^] the plugin runtime was updated and there should be no issues with PDF output anymore.
 
 == Docker
