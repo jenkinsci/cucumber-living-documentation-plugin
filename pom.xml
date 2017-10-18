@@ -127,8 +127,9 @@
             <plugin>
                 <groupId>org.jenkins-ci.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
+                <version>2.1</version>
                 <configuration>
-                    <pluginFirstClassLoader>true</pluginFirstClassLoader>
+                    <pluginFirstClassLoader>false</pluginFirstClassLoader>
                 </configuration>
             </plugin>
             <plugin>
