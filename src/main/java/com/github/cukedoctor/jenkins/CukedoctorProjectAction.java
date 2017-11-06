@@ -23,8 +23,8 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
         this.job = job;
     }
 
-    public String job(){
-        if(jobName == null){
+    public String job() {
+        if (jobName == null) {
             jobName = job.getName();
         }
         return jobName;
@@ -33,16 +33,17 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
     /**
      * sidebar panel is visible when html and pdf documentation is available
      * so user don't need to navigate to all.html to choice documentation format
-     * @return <code>true</code> if both html and pdf documentation is present on last build <code>false</code> otherwise. 
+     *
+     * @return <code>true</code> if both html and pdf documentation is present on last build <code>false</code> otherwise.
      */
     public boolean showSidebarPanel() {
-        if(documentationPage != null && notEmpty(job.getBuilds())) {
+        if (documentationPage != null && notEmpty(job.getBuilds())) {
             Run<?, ?> lastBuild = job.getBuilds().getLastBuild();
             final Path BUILD_PATH = Paths.get(lastBuild.getRootDir() + System.getProperty("file.separator") + BASE_URL);
 
-            if(Files.exists(BUILD_PATH)){
-                if(!FileUtil.findFiles(BUILD_PATH.toString(),HTML_DOCUMENTATION,true).isEmpty()
-                        && !FileUtil.findFiles(BUILD_PATH.toString(),PDF_DOCUMENTATION,true).isEmpty()){
+            if (Files.exists(BUILD_PATH)) {
+                if (!FileUtil.findFiles(BUILD_PATH.toString(), HTML_DOCUMENTATION, true).isEmpty()
+                        && !FileUtil.findFiles(BUILD_PATH.toString(), PDF_DOCUMENTATION, true).isEmpty()) {
                     return true;
                 }
             }
@@ -54,23 +55,29 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
 
     @Override
     protected File dir() {
-        Run<?, ?> run = this.job.getLastCompletedBuild();
-        if (run != null) {
+        File dir = null;
+        if (job == null || this.job.getLastCompletedBuild() == null) {
+            dir = getProjectArchiveDir();
+        } else {
+            Run<?, ?> run = this.job.getLastCompletedBuild();
             File archiveDir = getBuildArchiveDir(run);
-
             if (archiveDir.exists()) {
-                return archiveDir;
+                dir = archiveDir;
+            } else {
+                dir = getProjectArchiveDir();
             }
         }
 
-        return getProjectArchiveDir();
+        return dir;
     }
 
     private File getProjectArchiveDir() {
         return new File(job.getRootDir(), CukedoctorBaseAction.BASE_URL);
     }
 
-    /** Gets the directory where the HTML report is stored for the given build. */
+    /**
+     * Gets the directory where the HTML report is stored for the given build.
+     */
     private File getBuildArchiveDir(Run<?, ?> run) {
         return new File(run.getRootDir(), CukedoctorBaseAction.BASE_URL);
     }
