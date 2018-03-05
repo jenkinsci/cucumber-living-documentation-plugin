@@ -32,13 +32,13 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
     }
 
 
-    public List<Run<?, ?>> getBuilds() {
-        List<Run<?, ?>> builds = new ArrayList<>();
+    public List<CukedoctorBuildAction> getBuilds() {
+        List<CukedoctorBuildAction> builds = new ArrayList<>();
 
         for (Run<?, ?> build : job.getBuilds()) {
             CukedoctorBuildAction action = build.getAction(CukedoctorBuildAction.class);
             if (action != null) {
-                builds.add(build);
+                builds.add(action);
             }
         }
 

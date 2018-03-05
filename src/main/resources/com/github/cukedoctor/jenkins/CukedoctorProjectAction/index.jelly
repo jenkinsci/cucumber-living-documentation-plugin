@@ -14,6 +14,13 @@
             display:none!important;
             }
 
+            table.display th {
+               font-size:18px;
+            }
+
+            div.row.pane-header {
+                background: #fff;
+            }
      </style>
 
 
@@ -22,10 +29,10 @@
 
             <div class="row container-fluid pane-frame" style="text-align:center;width:100%">
                 <div class="row pane-header" >
-                    <span style="font-size:1.2em">Living Documentation published by builds</span>
+                    <span style="font-size:18px">Living Documentation published by builds</span>
                 </div>
                 <div class="row pane-content">
-                    <table class="display" cellspacing="0" width="100%">
+                    <table class="display" cellspacing="10" width="100%">
                         <thead>
                              <tr>
                                 <th>
@@ -40,16 +47,21 @@
                                 <j:forEach items="${it.builds}" var="build">
                                     <tr class="build-row  single-line">
                                         <td>
-                                            <b>#${build.number}</b> (<fmt:formatDate value="${build.time}" type="both" />)
+                                            <b>#${build.build.number}</b> (<fmt:formatDate value="${build.build.time}" type="both" />)
                                         </td>
 
                                          <td>
-                                             <a href="../${build.number}/cucumber-living-documentation?doctype=html" target="_blank">
+                                          <j:if test="${build.isHtmlDocs()}">
+                                             <a href="../${build.build.number}/cucumber-living-documentation?doctype=html" target="_blank">
                                                        <img src="${rootURL}/plugin/cucumber-living-documentation/HTML5.png" alt="HTML" height="42" width="42"/>
                                              </a>
-                                              <a href="../${build.number}/cucumber-living-documentation?doctype=pdf" target="_blank">
-                                                   <img src="${rootURL}/plugin/cucumber-living-documentation/PDF.png" alt="PDF" height="42" width="42"/>
-                                             </a>
+                                          </j:if>
+
+                                           <j:if test="${build.isPdfDocs()}">
+                                                  <a href="../${build.build.number}/cucumber-living-documentation?doctype=pdf" target="_blank">
+                                                       <img src="${rootURL}/plugin/cucumber-living-documentation/PDF.png" alt="PDF" height="42" width="42"/>
+                                                 </a>
+                                            </j:if>
                                          </td>
                                     </tr>
                                 </j:forEach>

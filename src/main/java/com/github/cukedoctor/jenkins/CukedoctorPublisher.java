@@ -147,7 +147,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         workspaceJsonSourceDir.copyRecursiveTo("**/*.json", workspaceDocsDir);
         workspace.copyRecursiveTo("**/cukedoctor-intro.adoc,**/cukedoctor.properties,**/cukedoctor.css,**/cukedoctor-pdf.yml", workspaceDocsDir);
 
-        Properties properties = System.getProperties();
         System.setProperty("INTRO_CHAPTER_DIR", workspaceDocsDir.getRemote());
         System.setProperty("INTRO_CHAPTER_RELATIVE_PATH", workspaceDocsDir.getRemote());
         System.setProperty("CUKEDOCTOR_CUSTOMIZATION_DIR", workspaceDocsDir.getRemote());
@@ -168,7 +167,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         logger.println("");
 
         if(System.getProperty("hudson.model.DirectoryBrowserSupport.CSP") == null) {
-            listener.error("To use Living Documentation plugin you need to relax content security policy by setting an EMPTY string on the system property 'hudson.model.DirectoryBrowserSupport.CSP', e.g: when starting Jenkins -Dhudson.model.DirectoryBrowserSupport.CSP=\"\" or in a pipeline script: System.setProperty(\"hudson.model.DirectoryBrowserSupport.CSP\",\"\") . More details see https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy.  : ");
+            listener.error("To use Living Documentation plugin you need to relax content security policy by setting an EMPTY string on the system property 'hudson.model.DirectoryBrowserSupport.CSP', e.g: when starting Jenkins -Dhudson.model.DirectoryBrowserSupport.CSP=\\\"\\\" or in a pipeline script: System.setProperty(\"hudson.model.DirectoryBrowserSupport.CSP\",\"\") . More details see https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy.  : ");
             build.setResult(Result.UNSTABLE);
             return;
         }
@@ -205,7 +204,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
             try {
                 String outputPath = docsDirectory.getAbsolutePath();
-                CukedoctorBuildAction action = new CukedoctorBuildAction(build, globalConfig);
+                CukedoctorBuildAction action = new CukedoctorBuildAction(build, format);
                 final ExecutorService pool = Executors.newFixedThreadPool(4);
                 if ("all".equals(format.getFormat())) { //when format is 'all' send user to the list of documentation published by the job
                     documentationLink = "../" + CukedoctorBaseAction.BASE_URL + "/";
@@ -232,17 +231,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                 Thread.interrupted();
                 listener.error("Your documentation is taking too long to be generated. Halting the generation now to not throttle Jenkins.");
                 result = Result.FAILURE;
-            } finally {
-                System.clearProperty("INTRO_CHAPTER_DIR");
-                System.clearProperty("INTRO_CHAPTER_RELATIVE_PATH");
-                System.clearProperty("CUKEDOCTOR_CUSTOMIZATION_DIR");
-                logger.println("<<< PROPERTIES AFTER >>>");
-                for (Map.Entry<Object,Object> e : properties.entrySet()) {
-                    logger.println(e.getKey()+": "+e.getValue());
-                }
             }
-
-
             if (result.equals(Result.SUCCESS)) {
                 listener.hyperlink(documentationLink, "Documentation generated successfully!");
                 logger.println("");

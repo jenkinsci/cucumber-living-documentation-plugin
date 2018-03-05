@@ -1,6 +1,6 @@
 package com.github.cukedoctor.jenkins;
 
-import com.github.cukedoctor.config.GlobalConfig;
+import com.github.cukedoctor.jenkins.model.FormatType;
 import hudson.model.Action;
 import hudson.model.Run;
 import jenkins.tasks.SimpleBuildStep;
@@ -13,19 +13,19 @@ import java.util.List;
 public class CukedoctorBuildAction extends CukedoctorBaseAction implements SimpleBuildStep.LastBuildAction {
 
     private final Run<?, ?> build;
-    private GlobalConfig config;
+    private FormatType docType;
     private List<CukedoctorProjectAction> projectActions;
 
     public CukedoctorBuildAction(Run<?, ?> build) {
-        config = GlobalConfig.getInstance();
+        docType = FormatType.HTML;
         this.build = build;
         projectActions = new ArrayList<>();
         projectActions.add(new CukedoctorProjectAction(build.getParent()));
      }
 
-    public CukedoctorBuildAction(Run<?, ?> build, GlobalConfig globalConfig) {
+    public CukedoctorBuildAction(Run<?, ?> build, FormatType docType) {
         this(build);
-        this.config = globalConfig;
+        this.docType = docType;
      }
 
     @Override
@@ -47,8 +47,15 @@ public class CukedoctorBuildAction extends CukedoctorBaseAction implements Simpl
         projectActions.add(action);
     }
 
-    public GlobalConfig getConfig() {
-        return config;
+    public boolean isHtmlDocs() {
+        return FormatType.HTML.equals(docType) || FormatType.ALL.equals(docType);
     }
 
+    public boolean isPdfDocs() {
+        return FormatType.PDF.equals(docType) || FormatType.ALL.equals(docType);
+    }
+
+    public Run<?, ?> getBuild() {
+        return build;
+    }
 }
