@@ -5,7 +5,7 @@ package com.github.cukedoctor.jenkins.model;
  */
 public enum FormatType {
 
-    HTML("html"),pdf("pdf"), ALL("all");
+    HTML("html"), PDF("pdf"), ALL("all");
 
     public final String format;
 

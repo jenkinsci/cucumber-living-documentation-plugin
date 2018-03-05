@@ -1,20 +1,15 @@
 package com.github.cukedoctor.jenkins;
 
-import static com.github.cukedoctor.util.Assert.notEmpty;
+import hudson.model.Job;
+import hudson.model.ProminentProjectAction;
+import hudson.model.Run;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import com.github.cukedoctor.util.FileUtil;
-
-import hudson.model.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CukedoctorProjectAction extends CukedoctorBaseAction implements ProminentProjectAction {
 
-    private static final java.lang.String HTML_DOCUMENTATION = "documentation.html";
-    private static final java.lang.String PDF_DOCUMENTATION = "documentation.pdf";
     private final Job<?, ?> job;
 
     private String jobName;
@@ -30,35 +25,30 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
         return jobName;
     }
 
-    /**
-     * sidebar panel is visible when html and pdf documentation is available
-     * so user don't need to navigate to all.html to choice documentation format
-     *
-     * @return <code>true</code> if both html and pdf documentation is present on last build <code>false</code> otherwise.
-     */
-    public boolean showSidebarPanel() {
-        if (documentationPage != null && notEmpty(job.getBuilds())) {
-            Run<?, ?> lastBuild = job.getBuilds().getLastBuild();
-            final Path BUILD_PATH = Paths.get(lastBuild.getRootDir() + System.getProperty("file.separator") + BASE_URL);
 
-            if (Files.exists(BUILD_PATH)) {
-                if (!FileUtil.findFiles(BUILD_PATH.toString(), HTML_DOCUMENTATION, true).isEmpty()
-                        && !FileUtil.findFiles(BUILD_PATH.toString(), PDF_DOCUMENTATION, true).isEmpty()) {
-                    return true;
-                }
+    @Override
+    protected String getTitle() {
+        return this.job.getDisplayName();
+    }
+
+
+    public List<Run<?, ?>> getBuilds() {
+        List<Run<?, ?>> builds = new ArrayList<>();
+
+        for (Run<?, ?> build : job.getBuilds()) {
+            CukedoctorBuildAction action = build.getAction(CukedoctorBuildAction.class);
+            if (action != null) {
+                builds.add(build);
             }
         }
-        return false;
 
-
+        return builds;
     }
 
     @Override
     protected File dir() {
         File dir = null;
-        if (job == null || this.job.getLastCompletedBuild() == null) {
-            dir = getProjectArchiveDir();
-        } else {
+        if (job != null && this.job.getLastCompletedBuild() != null) {
             Run<?, ?> run = this.job.getLastCompletedBuild();
             File archiveDir = getBuildArchiveDir(run);
             if (archiveDir.exists()) {
@@ -66,6 +56,8 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
             } else {
                 dir = getProjectArchiveDir();
             }
+        } else {
+            dir = getProjectArchiveDir();
         }
 
         return dir;
@@ -75,15 +67,9 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
         return new File(job.getRootDir(), CukedoctorBaseAction.BASE_URL);
     }
 
-    /**
-     * Gets the directory where the HTML report is stored for the given build.
-     */
+    /** Gets the directory where docs are stored for the given build. */
     private File getBuildArchiveDir(Run<?, ?> run) {
         return new File(run.getRootDir(), CukedoctorBaseAction.BASE_URL);
     }
 
-    @Override
-    protected String getTitle() {
-        return this.job.getDisplayName();
-    }
 }

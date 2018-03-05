@@ -33,6 +33,8 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -78,9 +80,9 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
     private String featuresDir;
 
-    private  boolean numbered;
+    private boolean numbered;
 
-    private  boolean sectAnchors;
+    private boolean sectAnchors;
 
     private TocType toc;
 
@@ -120,27 +122,39 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
     @Override
     public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener)
             throws IOException, InterruptedException {
-    	  
-    	 FilePath workspaceJsonSourceDir;//most of the time on slave
-    	 FilePath workspaceJsonTargetDir;//always on master
-         if (!hasText(featuresDir)) {
-             workspaceJsonSourceDir = workspace;
-             workspaceJsonTargetDir = getMasterWorkspaceDir(build);
-         } else {
-             workspaceJsonSourceDir = new FilePath(workspace, featuresDir);
-             workspaceJsonTargetDir = new FilePath(getMasterWorkspaceDir(build), featuresDir);
-         }
-    	
-      
+
+
+        Result result = Result.SUCCESS;
+        File docsDirectory = new File(build.getRootDir(), CukedoctorBaseAction.BASE_URL); //directory to save generated adoc file (the source code of living docs)
+        if (!docsDirectory.exists()) {
+            boolean created = docsDirectory.mkdirs();
+            if (!created) {
+                listener.error("Could not create file at location: " + docsDirectory.getAbsolutePath());
+                result = Result.UNSTABLE;
+            }
+        }
+
+        FilePath workspaceJsonSourceDir;// directory to start searching for cucumber json (most of the time on slave)
+        FilePath workspaceDocsDir = new FilePath(getMasterWorkspaceDir(build), CukedoctorBaseAction.BASE_URL);// directory where docs will be save
+        if (!hasText(featuresDir)) {
+            workspaceJsonSourceDir = workspace;
+        } else {
+            workspaceJsonSourceDir = new FilePath(workspace, featuresDir);
+        }
+
         logger = listener.getLogger();
-        workspaceJsonSourceDir.copyRecursiveTo("**/*.json,**/cukedoctor-intro.adoc,**/cukedoctor.properties,**/cukedoctor.css,**/cukedoctor-pdf.yml", workspaceJsonTargetDir);
-        
-        System.setProperty("INTRO_CHAPTER_DIR",workspaceJsonTargetDir.getRemote());
-        System.setProperty("CUKEDOCTOR_CUSTOMIZATION_DIR",workspaceJsonTargetDir.getRemote());
+
+        workspaceJsonSourceDir.copyRecursiveTo("**/*.json", workspaceDocsDir);
+        workspace.copyRecursiveTo("**/cukedoctor-intro.adoc,**/cukedoctor.properties,**/cukedoctor.css,**/cukedoctor-pdf.yml", workspaceDocsDir);
+
+        Properties properties = System.getProperties();
+        System.setProperty("INTRO_CHAPTER_DIR", workspaceDocsDir.getRemote());
+        System.setProperty("INTRO_CHAPTER_RELATIVE_PATH", workspaceDocsDir.getRemote());
+        System.setProperty("CUKEDOCTOR_CUSTOMIZATION_DIR", workspaceDocsDir.getRemote());
 
         logger.println("");
         logger.println("Generating living documentation for " + build.getFullDisplayName() + " with the following arguments: ");
-        logger.println("Features dir: " + workspaceJsonSourceDir.getRemote());
+        logger.println("Features dir: " + (hasText(featuresDir) ? featuresDir : ""));
         logger.println("Format: " + format.getFormat());
         logger.println("Toc: " + toc.getToc());
         logger.println("Title: " + title);
@@ -153,8 +167,14 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         logger.println("Hide tags: " + Boolean.toString(hideTags));
         logger.println("");
 
-        Result result = Result.SUCCESS;
-        List<Feature> features = FeatureParser.findAndParse(workspaceJsonTargetDir.getRemote());
+        if(System.getProperty("hudson.model.DirectoryBrowserSupport.CSP") == null) {
+            listener.error("To use Living Documentation plugin you need to relax content security policy by setting an EMPTY string on the system property 'hudson.model.DirectoryBrowserSupport.CSP', e.g: when starting Jenkins -Dhudson.model.DirectoryBrowserSupport.CSP=\"\" or in a pipeline script: System.setProperty(\"hudson.model.DirectoryBrowserSupport.CSP\",\"\") . More details see https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy.  : ");
+            build.setResult(Result.UNSTABLE);
+            return;
+        }
+
+
+        List<Feature> features = FeatureParser.findAndParse(workspaceDocsDir.getRemote());
         if (!features.isEmpty()) {
             if (!hasText(title)) {
                 title = "Living Documentation";
@@ -162,14 +182,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
             logger.println("Found " + features.size() + " feature(s)...");
 
-            File targetBuildDirectory = new File(build.getRootDir(), CukedoctorBaseAction.BASE_URL);
-            if (!targetBuildDirectory.exists()) {
-                boolean created = targetBuildDirectory.mkdirs();
-                if (!created) {
-                    listener.error("Could not create file at location: " + targetBuildDirectory.getAbsolutePath());
-                    result = Result.UNSTABLE;
-                }
-            }
 
             GlobalConfig globalConfig = GlobalConfig.getInstance();
             DocumentAttributes documentAttributes = globalConfig.getDocumentAttributes().
@@ -189,52 +201,28 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
             globalConfig.getLayoutConfig().setHideTags(hideTags);
 
-
-            String outputPath = targetBuildDirectory.getAbsolutePath();
-            CukedoctorBuildAction action =  new CukedoctorBuildAction(build);
             String documentationLink = "";
-            final ExecutorService pool = Executors.newFixedThreadPool(4);
-            if ("all".equals(format.getFormat())) {
-                documentationLink = "../" + CukedoctorBaseAction.BASE_URL+"/"+CukedoctorBaseAction.ALL_DOCUMENTATION;
-                File allHtml = new File(outputPath + System.getProperty("file.separator") + CukedoctorBaseAction.ALL_DOCUMENTATION);
-                if (!allHtml.exists()) {
-                    boolean created = allHtml.createNewFile();
-                    if (!created) {
-                        listener.error("Could not create file at location: " + allHtml.getAbsolutePath());
-                        result = Result.UNSTABLE;
-                    }
-                }
-                InputStream is = null;
-                OutputStream os = null;
-                try {
-                    is = getClass().getResourceAsStream("/" + CukedoctorBaseAction.ALL_DOCUMENTATION);
-                    os = new FileOutputStream(allHtml);
 
-                    int copyResult = IOUtils.copy(is, os);
-                    if (copyResult == -1) {
-                        listener.error("File is too big.");//will never reach here but findbugs forced it...
-                        result = Result.UNSTABLE;
-                    }
-                } finally {
-                    if (is != null) {
-                        is.close();
-                    }
-                    if (os != null) {
-                        os.close();
-                    }
-                }
-
-                action.setDocumentationPage(CukedoctorBaseAction.ALL_DOCUMENTATION);
-                pool.execute(runAll(features, documentAttributes, outputPath));
-            } else {
-                documentationLink = "../" + CukedoctorBaseAction.BASE_URL+"/documentation." + format.getFormat();
-                action.setDocumentationPage("documentation." + format.getFormat());
-                pool.execute(run(features, documentAttributes, outputPath));
-            }
-
-            build.addAction(action);
-            pool.shutdown();
             try {
+                String outputPath = docsDirectory.getAbsolutePath();
+                CukedoctorBuildAction action = new CukedoctorBuildAction(build, globalConfig);
+                final ExecutorService pool = Executors.newFixedThreadPool(4);
+                if ("all".equals(format.getFormat())) { //when format is 'all' send user to the list of documentation published by the job
+                    documentationLink = "../" + CukedoctorBaseAction.BASE_URL + "/";
+                    pool.execute(runAll(features, documentAttributes, outputPath));
+                } else {
+                    documentationLink = "../" + build.getNumber() + "/" + CukedoctorBaseAction.BASE_URL + "/documentation." + format.getFormat();
+                    pool.execute(run(features, documentAttributes, outputPath));
+                }
+
+                CukedoctorBuildAction cukedoctorBuildAction = build.getAction(CukedoctorBuildAction.class);
+                if (cukedoctorBuildAction != null) {
+                    cukedoctorBuildAction.addAction(new CukedoctorProjectAction(build.getParent()));
+                } else {
+                    build.addAction(action);
+                }
+
+                pool.shutdown();
                 if (format.equals(FormatType.HTML)) {
                     pool.awaitTermination(5, TimeUnit.MINUTES);
                 } else {
@@ -244,15 +232,24 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                 Thread.interrupted();
                 listener.error("Your documentation is taking too long to be generated. Halting the generation now to not throttle Jenkins.");
                 result = Result.FAILURE;
+            } finally {
+                System.clearProperty("INTRO_CHAPTER_DIR");
+                System.clearProperty("INTRO_CHAPTER_RELATIVE_PATH");
+                System.clearProperty("CUKEDOCTOR_CUSTOMIZATION_DIR");
+                logger.println("<<< PROPERTIES AFTER >>>");
+                for (Map.Entry<Object,Object> e : properties.entrySet()) {
+                    logger.println(e.getKey()+": "+e.getValue());
+                }
             }
-            
-            if(result.equals(Result.SUCCESS)){
-           	 listener.hyperlink(documentationLink, "Documentation generated successfully!");
+
+
+            if (result.equals(Result.SUCCESS)) {
+                listener.hyperlink(documentationLink, "Documentation generated successfully!");
                 logger.println("");
             }
 
         } else {
-            logger.println(String.format("No features Found in %s. %sLiving documentation will not be generated.", workspaceJsonTargetDir.getRemote(), "\n"));
+            logger.println(String.format("No features Found in %s. %sLiving documentation will not be generated.", workspaceJsonSourceDir.getRemote(), "\n"));
 
         }
 
@@ -261,19 +258,20 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
     /**
      * mainly for findbugs be happy
+     *
      * @param build
      * @return
      */
     private FilePath getMasterWorkspaceDir(Run<?, ?> build) {
-        if(build != null &&  build.getRootDir() != null){
+        if (build != null && build.getRootDir() != null) {
             return new FilePath(build.getRootDir());
-        } else{
-        	return new FilePath(Paths.get("").toFile());
+        } else {
+            return new FilePath(Paths.get("").toFile());
         }
     }
 
     /**
-     * generates html and pdf documentation 'inlined' otherwise if we execute them in separated threads
+     * generates html and PDF documentation 'inlined' otherwise if we execute them in separated threads
      * only the last thread content is rendered (cause they work on the same adoc file)
      *
      * @return
@@ -341,7 +339,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         CukedoctorConverter converter = Cukedoctor.instance(features, attrs);
         String doc = converter.renderDocumentation();
         File adocFile = FileUtil.saveFile(outputPath + "/documentation.adoc", doc);
-        asciidoctor.convertFile(adocFile, OptionsBuilder.options().backend(attrs.getBackend()).safe(SafeMode.UNSAFE).asMap());
+        asciidoctor.convertFile(adocFile, OptionsBuilder.options().backend(attrs.getBackend()).safe(SafeMode.SAFE).asMap());
     }
 
     @Override
@@ -350,7 +348,8 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
     }
 
 
-    @Extension @Symbol("livingDocs")
+    @Extension
+    @Symbol("livingDocs")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
 

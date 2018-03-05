@@ -15,38 +15,47 @@ import hudson.model.DirectoryBrowserSupport;
 
 public abstract class CukedoctorBaseAction implements Action {
 
-    protected static final String ALL_DOCUMENTATION = "all.html";
-
-    protected String documentationPage = "documentation.html";
+    protected static final String ICON_NAME = "/plugin/cucumber-living-documentation/cuke.png";
 
     protected static final String BASE_URL = "cucumber-living-documentation";
+
+    protected static final String TITLE = "Living documentation";
+
+    private static final String HTML_DOCS = "documentation.html";
+
+    private static final String PDF_DOCS = "documentation.pdf";
+
 
     public String getUrlName() {
         return BASE_URL;
     }
 
     public String getDisplayName() {
-        return "Living documentation";
+        return TITLE;
     }
 
     public String getIconFileName() {
-        return "/plugin/cucumber-living-documentation/cuke.png";
-    }
-
-    public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        System.setProperty("hudson.model.DirectoryBrowserSupport.CSP", "");
-        DirectoryBrowserSupport dbs = new DirectoryBrowserSupport(this, new FilePath(dir()), getTitle(), getUrlName(),
-                false);
-
-        dbs.setIndexFileName(documentationPage);
-        dbs.generateResponse(req, rsp, this);
+        return ICON_NAME;
     }
 
     protected abstract String getTitle();
 
     protected abstract File dir();
 
-    public void setDocumentationPage(String documentationPage) {
-        this.documentationPage = documentationPage;
+
+    public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        DirectoryBrowserSupport dbs = new DirectoryBrowserSupport(this, new FilePath(dir()), getTitle(), getUrlName(),
+                false);
+
+        if (req.hasParameter("doctype")) {
+            String docType = req.getParameter("doctype").toLowerCase();
+            if (docType.equals("html")) {
+                dbs.setIndexFileName(HTML_DOCS);
+            } else if (docType.equals("pdf")) {
+                dbs.setIndexFileName(PDF_DOCS);
+            }
+        }
+
+        dbs.generateResponse(req, rsp, this);
     }
 }

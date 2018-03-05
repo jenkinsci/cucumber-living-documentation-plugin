@@ -1,0 +1,73 @@
+<?jelly escape-by-default='false'?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:fmt="jelly:fmt" xmlns:l="/lib/layout">
+    <l:layout title="Living Documentation of ${it.project.name}">
+
+ <l:header>
+    <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/cucumber-living-documentation/css/tables.min.css" />
+
+     <style type="text/css">
+            #main-panel,#side-panel {
+                margin-left:0!important;
+            }
+
+            #side-panel {
+            display:none!important;
+            }
+
+     </style>
+
+
+  </l:header>
+        <l:main-panel>
+
+            <div class="row container-fluid pane-frame" style="text-align:center;width:100%">
+                <div class="row pane-header" >
+                    <span style="font-size:1.2em">Living Documentation published by builds</span>
+                </div>
+                <div class="row pane-content">
+                    <table class="display" cellspacing="0" width="100%">
+                        <thead>
+                             <tr>
+                                <th>
+                                   Build
+                                </th>
+                                <th>
+                                   Documentation
+                                 </th>
+                             </tr>
+                        </thead>
+                        <tbody>
+                                <j:forEach items="${it.builds}" var="build">
+                                    <tr class="build-row  single-line">
+                                        <td>
+                                            <b>#${build.number}</b> (<fmt:formatDate value="${build.time}" type="both" />)
+                                        </td>
+
+                                         <td>
+                                             <a href="../${build.number}/cucumber-living-documentation?doctype=html" target="_blank">
+                                                       <img src="${rootURL}/plugin/cucumber-living-documentation/HTML5.png" alt="HTML" height="42" width="42"/>
+                                             </a>
+                                              <a href="../${build.number}/cucumber-living-documentation?doctype=pdf" target="_blank">
+                                                   <img src="${rootURL}/plugin/cucumber-living-documentation/PDF.png" alt="PDF" height="42" width="42"/>
+                                             </a>
+                                         </td>
+                                    </tr>
+                                </j:forEach>
+                        </tbody>
+                    </table>
+                </div>
+                
+                 <j:if test="${empty it.builds}">
+                 	 <span style="font-size:1.1em">No documentation published yet.</span>
+                 </j:if>
+            </div>
+
+
+        </l:main-panel>
+
+    </l:layout>
+
+</j:jelly>
+
+
+
