@@ -24,6 +24,7 @@ public class CucumberLivingDocumentationIT {
 	@Test
 	public void shouldGenerateLivingDocumentatation() throws Exception{
 		//given
+		System.setProperty("hudson.model.DirectoryBrowserSupport.CSP","");
 		FreeStyleProject project = jenkins.createFreeStyleProject("test");
 		SingleFileSCM scm = new SingleFileSCM("asciidoctor.json",
 				CucumberLivingDocumentationIT.class.getResource("/json-output/asciidoctor/asciidoctor.json").toURI().toURL());
@@ -47,6 +48,7 @@ public class CucumberLivingDocumentationIT {
 	
 	@Test
 	public void shouldGenerateLivingDocumentatationOnSlaveNode() throws Exception{
+		System.setProperty("hudson.model.DirectoryBrowserSupport.CSP","");
 		DumbSlave slave = jenkins.createOnlineSlave();
 		FreeStyleProject project = jenkins.createFreeStyleProject("test");
 		project.setAssignedNode(slave);
