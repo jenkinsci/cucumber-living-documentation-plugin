@@ -144,13 +144,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
         logger = listener.getLogger();
 
-        workspaceJsonSourceDir.copyRecursiveTo("**/*.json", workspaceDocsDir);
-        workspace.copyRecursiveTo("**/cukedoctor-intro.adoc,**/cukedoctor.properties,**/cukedoctor.css,**/cukedoctor-pdf.yml", workspaceDocsDir);
-
-        System.setProperty("INTRO_CHAPTER_DIR", workspaceDocsDir.getRemote());
-        System.setProperty("INTRO_CHAPTER_RELATIVE_PATH", workspaceDocsDir.getRemote());
-        System.setProperty("CUKEDOCTOR_CUSTOMIZATION_DIR", workspaceDocsDir.getRemote());
-
         logger.println("");
         logger.println("Generating living documentation for " + build.getFullDisplayName() + " with the following arguments: ");
         logger.println("Features dir: " + (hasText(featuresDir) ? featuresDir : ""));
@@ -166,11 +159,18 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         logger.println("Hide tags: " + Boolean.toString(hideTags));
         logger.println("");
 
-        if(System.getProperty("hudson.model.DirectoryBrowserSupport.CSP") == null) {
+        if(!isContentSecurityPolicyRelaxed()) {
             listener.error("To use Living Documentation plugin you need to relax content security policy by setting an EMPTY string on the system property 'hudson.model.DirectoryBrowserSupport.CSP', e.g: when starting Jenkins -Dhudson.model.DirectoryBrowserSupport.CSP=\\\"\\\" or in a pipeline script: System.setProperty(\"hudson.model.DirectoryBrowserSupport.CSP\",\"\") . More details see https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy.  : ");
             build.setResult(Result.UNSTABLE);
             return;
         }
+
+        workspaceJsonSourceDir.copyRecursiveTo("**/*.json", workspaceDocsDir);
+        workspace.copyRecursiveTo("**/cukedoctor-intro.adoc,**/cukedoctor.properties,**/cukedoctor.css,**/cukedoctor-pdf.yml", workspaceDocsDir);
+
+        System.setProperty("INTRO_CHAPTER_DIR", workspaceDocsDir.getRemote());
+        System.setProperty("INTRO_CHAPTER_RELATIVE_PATH", workspaceDocsDir.getRemote());
+        System.setProperty("CUKEDOCTOR_CUSTOMIZATION_DIR", workspaceDocsDir.getRemote());
 
 
         List<Feature> features = FeatureParser.findAndParse(workspaceDocsDir.getRemote());
@@ -243,6 +243,17 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         }
 
         build.setResult(result);
+    }
+
+    /**
+     * Content security policy is relaxed when no policy is set (e.g a blank string) or does not contains restricting rules like 'sandbox'
+     *
+     * Note that no policy (null system property) means that it is NOT relaxed because the default policy is used: "sandbox; default-src 'none'; img-src 'self'; style-src 'self';"
+     *
+     */
+    private boolean isContentSecurityPolicyRelaxed() {
+        final String contentSecurityPolicy = System.getProperty("hudson.model.DirectoryBrowserSupport.CSP");
+        return contentSecurityPolicy != null && !contentSecurityPolicy.contains("sandbox") || !contentSecurityPolicy.contains("img-src 'self'") || !contentSecurityPolicy.contains("style-src 'self'");
     }
 
     /**
