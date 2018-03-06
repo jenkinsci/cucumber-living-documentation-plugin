@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -14,6 +15,11 @@ public class LivingDocumentationPipelineIT {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Before
+    public void setup() {
+        System.setProperty("hudson.model.DirectoryBrowserSupport.CSP","");
+    }
 
 
     @Test
