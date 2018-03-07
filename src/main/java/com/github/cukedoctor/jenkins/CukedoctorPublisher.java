@@ -23,42 +23,17 @@
  */
 package com.github.cukedoctor.jenkins;
 
-import static com.github.cukedoctor.util.Assert.hasText;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import com.github.cukedoctor.config.GlobalConfig;
-import org.apache.commons.io.IOUtils;
-import org.asciidoctor.Asciidoctor;
-import org.asciidoctor.OptionsBuilder;
-import org.asciidoctor.SafeMode;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import com.github.cukedoctor.Cukedoctor;
 import com.github.cukedoctor.api.CukedoctorConverter;
 import com.github.cukedoctor.api.DocumentAttributes;
 import com.github.cukedoctor.api.model.Feature;
+import com.github.cukedoctor.config.CukedoctorConfig;
+import com.github.cukedoctor.config.GlobalConfig;
 import com.github.cukedoctor.extension.CukedoctorExtensionRegistry;
 import com.github.cukedoctor.jenkins.model.FormatType;
 import com.github.cukedoctor.jenkins.model.TocType;
 import com.github.cukedoctor.parser.FeatureParser;
 import com.github.cukedoctor.util.FileUtil;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundSetter;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -72,6 +47,25 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
+import org.asciidoctor.Asciidoctor;
+import org.asciidoctor.OptionsBuilder;
+import org.asciidoctor.SafeMode;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import static com.github.cukedoctor.util.Assert.hasText;
 
 /**
  * @author rmpestano
@@ -168,10 +162,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         workspaceJsonSourceDir.copyRecursiveTo("**/*.json", workspaceDocsDir);
         workspace.copyRecursiveTo("**/cukedoctor-intro.adoc,**/cukedoctor.properties,**/cukedoctor.css,**/cukedoctor-pdf.yml", workspaceDocsDir);
 
-        System.setProperty("INTRO_CHAPTER_DIR", workspaceDocsDir.getRemote());
-        System.setProperty("INTRO_CHAPTER_RELATIVE_PATH", workspaceDocsDir.getRemote());
-        System.setProperty("CUKEDOCTOR_CUSTOMIZATION_DIR", workspaceDocsDir.getRemote());
-
 
         List<Feature> features = FeatureParser.findAndParse(workspaceDocsDir.getRemote());
         if (!features.isEmpty()) {
@@ -200,6 +190,11 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
             globalConfig.getLayoutConfig().setHideTags(hideTags);
 
+            CukedoctorConfig cukedoctorConfig = new CukedoctorConfig()
+            .setIntroChapterDir(workspaceDocsDir.getRemote())
+            .setIntroChapterRelativePath(workspaceDocsDir.getRemote())
+            .setCustomizationDir(workspaceDocsDir.getRemote());
+
             String documentationLink = "";
 
             try {
@@ -208,10 +203,10 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                 final ExecutorService pool = Executors.newFixedThreadPool(4);
                 if ("all".equals(format.getFormat())) { //when format is 'all' send user to the list of documentation published by the job
                     documentationLink = "../" + CukedoctorBaseAction.BASE_URL + "/";
-                    pool.execute(runAll(features, documentAttributes, outputPath));
+                    pool.execute(runAll(features, documentAttributes, cukedoctorConfig, outputPath));
                 } else {
                     documentationLink = "../" + build.getNumber() + "/" + CukedoctorBaseAction.BASE_URL + "/documentation." + format.getFormat();
-                    pool.execute(run(features, documentAttributes, outputPath));
+                    pool.execute(run(features, documentAttributes,cukedoctorConfig , outputPath));
                 }
 
                 CukedoctorBuildAction cukedoctorBuildAction = build.getAction(CukedoctorBuildAction.class);
@@ -276,7 +271,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
      *
      * @return
      */
-    private Runnable runAll(final List<Feature> features, final DocumentAttributes attrs, final String outputPath) {
+    private Runnable runAll(final List<Feature> features, final DocumentAttributes attrs, final CukedoctorConfig cukedoctorConfig, final String outputPath) {
         return new Runnable() {
 
             @Override
@@ -290,9 +285,9 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                      */
                     asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
                     attrs.backend("html5");
-                    generateDocumentation(features, attrs, outputPath, asciidoctor);
+                    generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
                     attrs.backend("pdf");
-                    generateDocumentation(features, attrs, outputPath, asciidoctor);
+                    generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
 
                 } catch (Exception e) {
                     logger.println(String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause()));
@@ -308,7 +303,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
     }
 
 
-    private Runnable run(final List<Feature> features, final DocumentAttributes attrs, final String outputPath) {
+    private Runnable run(final List<Feature> features, final DocumentAttributes attrs, final CukedoctorConfig cukedoctorConfig, final String outputPath) {
         return new Runnable() {
 
             @Override
@@ -316,7 +311,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                 Asciidoctor asciidoctor = null;
                 try {
                     asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
-                    generateDocumentation(features, attrs, outputPath, asciidoctor);
+                    generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
                 } catch (Exception e) {
                     logger.println(String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause()));
                     e.printStackTrace();
@@ -331,12 +326,12 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
     }
 
 
-    protected synchronized void generateDocumentation(List<Feature> features, DocumentAttributes attrs, String outputPath, Asciidoctor asciidoctor) {
+    protected synchronized void generateDocumentation(List<Feature> features, DocumentAttributes attrs, CukedoctorConfig cukedoctorConfig, String outputPath, Asciidoctor asciidoctor) {
         asciidoctor.unregisterAllExtensions();
         if (!attrs.getBackend().equalsIgnoreCase("pdf")) {
             new CukedoctorExtensionRegistry().register(asciidoctor);
         }
-        CukedoctorConverter converter = Cukedoctor.instance(features, attrs);
+        CukedoctorConverter converter = Cukedoctor.instance(features, attrs, cukedoctorConfig);
         String doc = converter.renderDocumentation();
         File adocFile = FileUtil.saveFile(outputPath + "/documentation.adoc", doc);
         asciidoctor.convertFile(adocFile, OptionsBuilder.options().backend(attrs.getBackend()).safe(SafeMode.SAFE).asMap());
