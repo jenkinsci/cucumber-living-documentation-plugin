@@ -248,7 +248,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
      */
     private boolean isContentSecurityPolicyRelaxed() {
         final String contentSecurityPolicy = System.getProperty("hudson.model.DirectoryBrowserSupport.CSP");
-        return contentSecurityPolicy != null && !contentSecurityPolicy.contains("sandbox") || !contentSecurityPolicy.contains("img-src 'self'") || !contentSecurityPolicy.contains("style-src 'self'");
+        return contentSecurityPolicy != null && !contentSecurityPolicy.contains("sandbox") && !contentSecurityPolicy.contains("img-src 'self'") && !contentSecurityPolicy.contains("style-src 'self'");
     }
 
     /**
