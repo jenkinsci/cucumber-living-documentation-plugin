@@ -154,7 +154,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         logger.println("");
 
         if(!isContentSecurityPolicyRelaxed()) {
-            listener.error("To use Living Documentation plugin you need to relax content security policy by setting an EMPTY string on the system property 'hudson.model.DirectoryBrowserSupport.CSP', e.g: when starting Jenkins -Dhudson.model.DirectoryBrowserSupport.CSP=\\\"\\\" or in a pipeline script: System.setProperty(\"hudson.model.DirectoryBrowserSupport.CSP\",\"\") . More details see https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy.  : ");
+            listener.error("To use Living Documentation plugin you need to relax content security policy by setting an EMPTY string on the system property 'hudson.model.DirectoryBrowserSupport.CSP', e.g: when starting Jenkins -Dhudson.model.DirectoryBrowserSupport.CSP=\\\"\\\" or in a pipeline script: System.setProperty(\"hudson.model.DirectoryBrowserSupport.CSP\",\"\"). Note that you can also relax only scripts and css e.g: -Dhudson.model.DirectoryBrowserSupport.CSP=\"sandbox allow-scripts; style-src 'unsafe-inline' *;script-src 'unsafe-inline' *;\". More details see https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy.  : ");
             build.setResult(Result.UNSTABLE);
             return;
         }
@@ -248,7 +248,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
      */
     private boolean isContentSecurityPolicyRelaxed() {
         final String contentSecurityPolicy = System.getProperty("hudson.model.DirectoryBrowserSupport.CSP");
-        return contentSecurityPolicy != null && !contentSecurityPolicy.contains("sandbox") && !contentSecurityPolicy.contains("img-src 'self'") && !contentSecurityPolicy.contains("style-src 'self'");
+        return contentSecurityPolicy != null && !contentSecurityPolicy.contains("img-src 'self'") && !contentSecurityPolicy.contains("style-src 'self'");
     }
 
     /**
