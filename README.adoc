@@ -33,7 +33,7 @@ The feature file for sample above can be https://github.com/rmpestano/dbunit-rul
  
 TIP: For more example documentations http://rmpestano.github.io/cukedoctor/[see here^].
 
-
+IMPORTANT: This plugin only works if https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy[*content security policy is relaxed*^] as described in https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy#ConfiguringContentSecurityPolicy-RelaxingTheRules[this section^].
 
 == Usage
 After instalation the post build action *Living documentation* must be available on your jobs:
