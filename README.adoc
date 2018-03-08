@@ -3,6 +3,11 @@
 :sectanchors:
 :sectlink:
 :numbered:
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
 
 image:https://travis-ci.org/jenkinsci/cucumber-living-documentation-plugin.svg[Build Status (Travis CI), link=https://travis-ci.org/jenkinsci/cucumber-living-documentation-plugin]
 image:https://coveralls.io/repos/jenkinsci/cucumber-living-documentation-plugin/badge.svg?branch=master&service=github[Coverage, link=https://coveralls.io/r/jenkinsci/cucumber-living-documentation-plugin]
