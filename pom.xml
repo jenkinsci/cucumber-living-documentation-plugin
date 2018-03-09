@@ -6,7 +6,7 @@
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
         <version>3.2</version>
-        <relativePath />
+        <relativePath/>
     </parent>
     <artifactId>cucumber-living-documentation</artifactId>
     <version>1.1.2-SNAPSHOT</version>
@@ -45,8 +45,8 @@
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/cucumber-living-documentation-plugin.git
         </developerConnection>
         <url>https://github.com/jenkinsci/cucumber-living-documentation-plugin</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <dependencyManagement>
         <dependencies>
@@ -56,7 +56,6 @@
                 <version>0.9.9</version>
             </dependency>
         </dependencies>
-
     </dependencyManagement>
 
     <dependencies>
@@ -74,7 +73,7 @@
         <dependency>
             <groupId>org.asciidoctor</groupId>
             <artifactId>asciidoctorj-pdf</artifactId>
-            <version>1.5.0-alpha.16</version>
+            <version>1.5.0-alpha.11</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.jruby</groupId>
@@ -82,11 +81,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>org.jruby</groupId>
             <artifactId>jruby-complete</artifactId>
-            <version>9.1.15.0</version>
+            <version>1.7.13</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci</groupId>

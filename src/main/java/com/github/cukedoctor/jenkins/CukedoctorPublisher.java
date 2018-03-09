@@ -61,9 +61,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static com.github.cukedoctor.util.Assert.hasText;
 
@@ -206,7 +204,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                     pool.execute(runAll(features, documentAttributes, cukedoctorConfig, outputPath));
                 } else {
                     documentationLink = "../" + build.getNumber() + "/" + CukedoctorBaseAction.BASE_URL + "/documentation." + format.getFormat();
-                    pool.execute(run(features, documentAttributes,cukedoctorConfig , outputPath));
+                    pool.execute(run(features, documentAttributes, cukedoctorConfig, outputPath));
                 }
 
                 CukedoctorBuildAction cukedoctorBuildAction = build.getAction(CukedoctorBuildAction.class);
@@ -279,10 +277,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
                 Asciidoctor asciidoctor = null;
                 try {
-                    /*
-                     * this throws: ERROR: org.jruby.exceptions.RaiseException: (LoadError) no such file to load -- jruby/java
-                     * asciidoctor = Asciidoctor.Factory.create();
-                     */
                     asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
                     attrs.backend("html5");
                     generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
@@ -290,8 +284,9 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                     generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
 
                 } catch (Exception e) {
-                    logger.println(String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause()));
                     e.printStackTrace();
+                    final String errorMessage = String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause());
+                    throw new RuntimeException(errorMessage);
                 } finally {
                     if (asciidoctor != null) {
                         asciidoctor.shutdown();
@@ -313,8 +308,9 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                     asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
                     generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
                 } catch (Exception e) {
-                    logger.println(String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause()));
                     e.printStackTrace();
+                    final String errorMessage = String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause());
+                    throw new RuntimeException(errorMessage);
                 } finally {
                     if (asciidoctor != null) {
                         asciidoctor.shutdown();

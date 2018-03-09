@@ -35,7 +35,7 @@ public class CukedoctorBuildAction extends CukedoctorBaseAction implements Simpl
 
     @Override
     protected File dir() {
-        return new File(build.getRootDir(), BASE_URL);
+        return new File(build.getRootDir(), BASE_URL +"/documentation."+(isHtmlDocs() ? "html":"pdf"));
     }
 
     @Override
