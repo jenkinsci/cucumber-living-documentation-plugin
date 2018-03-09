@@ -203,7 +203,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                     documentationLink = "../" + CukedoctorBaseAction.BASE_URL + "/";
                     pool.execute(runAll(features, documentAttributes, cukedoctorConfig, outputPath));
                 } else {
-                    documentationLink = "../" + build.getNumber() + "/" + CukedoctorBaseAction.BASE_URL + "/documentation." + format.getFormat();
+                    documentationLink = "../" + build.getNumber() + "/" + CukedoctorBaseAction.BASE_URL + "?doctype=" + format.getFormat();
                     pool.execute(run(features, documentAttributes, cukedoctorConfig, outputPath));
                 }
 
