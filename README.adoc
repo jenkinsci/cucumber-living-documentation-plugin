@@ -14,7 +14,7 @@ image:https://coveralls.io/repos/jenkinsci/cucumber-living-documentation-plugin/
 
 BDD living documentation on your jenkins build via https://github.com/rmpestano/cukedoctor[Cukedoctor^].
 
-IMPORTANT: This plugin only works if https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy[*content security policy is relaxed*^] as described in https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy#ConfiguringContentSecurityPolicy-RelaxingTheRules[this section^].
+IMPORTANT: This plugin only works if https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy[*content security policy is relaxed*^] as described in https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy#ConfiguringContentSecurityPolicy-RelaxingTheRules[this section^]. Following is an example of relaxed policy which works: `-Dhudson.model.DirectoryBrowserSupport.CSP="sandbox allow-scripts; style-src 'unsafe-inline' *;script-src 'unsafe-inline' *;"`.
 
 [IMPORTANT]
 ====
