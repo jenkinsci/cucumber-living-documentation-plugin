@@ -44,10 +44,18 @@ public abstract class CukedoctorBaseAction implements Action {
 
 
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        DirectoryBrowserSupport dbs = new DirectoryBrowserSupport(this, new FilePath(dir()), getTitle(), getUrlName(),
+
+        boolean hasDoctypeParam = req.hasParameter("doctype");
+
+        String dir = dir().getPath();
+        if(hasDoctypeParam) {
+           dir = dir.substring(0,dir.lastIndexOf("/"));
+        }
+
+        DirectoryBrowserSupport dbs = new DirectoryBrowserSupport(this, new FilePath(new File(dir)), getTitle(), getUrlName(),
                 false);
 
-        if (req.hasParameter("doctype")) {
+        if (hasDoctypeParam) {
             String docType = req.getParameter("doctype").toLowerCase();
             if (docType.equals("html")) {
                 dbs.setIndexFileName(HTML_DOCS);
