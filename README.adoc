@@ -3,13 +3,25 @@
 :sectanchors:
 :sectlink:
 :numbered:
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
 
 image:https://travis-ci.org/jenkinsci/cucumber-living-documentation-plugin.svg[Build Status (Travis CI), link=https://travis-ci.org/jenkinsci/cucumber-living-documentation-plugin]
 image:https://coveralls.io/repos/jenkinsci/cucumber-living-documentation-plugin/badge.svg?branch=master&service=github[Coverage, link=https://coveralls.io/r/jenkinsci/cucumber-living-documentation-plugin]
 
 BDD living documentation on your jenkins build via https://github.com/rmpestano/cukedoctor[Cukedoctor^].
 
+IMPORTANT: This plugin only works if https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy[*content security policy is relaxed*^] as described in https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy#ConfiguringContentSecurityPolicy-RelaxingTheRules[this section^]. Following is an example of relaxed policy which works: `-Dhudson.model.DirectoryBrowserSupport.CSP="sandbox allow-scripts; style-src 'unsafe-inline' *;script-src 'unsafe-inline' *;"`.
 
+[IMPORTANT]
+====
+Versions `2.x` of the plugin uses Jenkins `2.73.1` as baseline (https://github.com/jenkinsci/cucumber-living-documentation-plugin/issues/18[see issue #17^]), for older Jenkins installations use version *1.1.1* of this plugin, otherwise will face the error `java.lang.NoSuchMethodError: jnr.constants.platform.OpenFlags.defined()Z` when generating living documentation.
+
+TIP: The *PDF* documentation generation is way faster on version `2.x`.
+====
 
 == Introduction
 
@@ -30,9 +42,8 @@ Here is how a Cucumber feature look like in a documentation:
 image::feature.png[]
 
 The feature file for sample above can be https://github.com/rmpestano/dbunit-rules/blob/master/cdi/src/test/resources/features/core/core-seed-database.feature[found here^].
- 
-TIP: For more example documentations http://rmpestano.github.io/cukedoctor/[see here^].
 
+TIP: For more example documentations http://rmpestano.github.io/cukedoctor/[see here^].
 
 
 == Usage
@@ -53,13 +64,13 @@ When Cucumber living documentation plugin is enabled in your job it adds a link 
 
 image::initial.png[]
 
-NOTE: The plugin only stores the last generated documentation. 
+NOTE: The plugin only stores the last generated documentation.
 
 If you choice format *all* in configuration then two links will be rendered in the side panel:
 
 image::all-docs.png[]
 
- 
+
 [IMPORTANT]
 ====
 If you face the exception below:
@@ -69,6 +80,14 @@ java.lang.ClassCircularityError: org/jruby/RubyClass
 
 you probably hit https://issues.jenkins-ci.org/browse/JENKINS-31019[issue JENKINS-31019], to solve that you need to upgrade your installation to *v1.640* or newer.
 ====
+
+== Documentation history
+
+Since version `1.1.1` the plugin stores living documentation history.
+
+image::docs-history.png[link=https://user-images.githubusercontent.com/1592273/36995077-d5a8ddb2-2091-11e8-9e78-51ad3f1d8488.png]
+
+WARNING: It reads the history from your `job runs history`, if you delete a job execution, the documentation will also be deleted from the history.
 
 == Jenkins pipeline step
 

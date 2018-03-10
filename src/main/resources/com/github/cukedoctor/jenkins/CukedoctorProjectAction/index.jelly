@@ -59,7 +59,7 @@
 
                                            <j:if test="${build.isPdfDocs()}">
                                                   <a href="../${build.build.number}/cucumber-living-documentation?doctype=pdf" target="_blank">
-                                                       <img src="${rootURL}/plugin/cucumber-living-documentation/PDF.png" alt="PDF" height="42" width="42"/>
+                                                       <img src="${rootURL}/plugin/cucumber-living-documentation/PDF.png" alt="PDF" height="40" width="36"/>
                                                  </a>
                                             </j:if>
                                          </td>

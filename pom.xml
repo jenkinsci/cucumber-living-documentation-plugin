@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
         <version>3.2</version>
-        <relativePath/>
+        <relativePath />
     </parent>
     <artifactId>cucumber-living-documentation</artifactId>
-    <version>1.1.0</version>
+    <version>2.2-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <properties>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-        <jenkins.version>1.642.1</jenkins.version>
+        <jenkins.version>2.73.1</jenkins.version>
         <!-- Java Level to use. Java 7 required when using core >= 1.612 -->
         <java.level>7</java.level>
     </properties>
@@ -46,6 +45,7 @@
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/cucumber-living-documentation-plugin.git
         </developerConnection>
         <url>https://github.com/jenkinsci/cucumber-living-documentation-plugin</url>
+        <tag>HEAD</tag>
     </scm>
 
     <dependencyManagement>
@@ -56,7 +56,6 @@
                 <version>0.9.9</version>
             </dependency>
         </dependencies>
-
     </dependencyManagement>
 
     <dependencies>
@@ -82,7 +81,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>org.jruby</groupId>
             <artifactId>jruby-complete</artifactId>
@@ -180,6 +178,18 @@
             <version>1.19.0</version>
             <scope>test</scope>
         </dependency>
+         <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>ssh-credentials</artifactId>
+            <version>1.13</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>structs</artifactId>
+            <version>1.9</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
@@ -254,8 +264,6 @@
     </build>
 
     <profiles>
-
-
         <profile>
             <id>coverage</id>
             <properties>
@@ -307,6 +315,43 @@
             </dependencies>
         </profile>
         
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>2.19.1</version>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <profile>
             <id>release</id>
             <build>

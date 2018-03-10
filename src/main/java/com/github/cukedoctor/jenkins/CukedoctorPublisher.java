@@ -61,9 +61,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static com.github.cukedoctor.util.Assert.hasText;
 
@@ -154,7 +152,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         logger.println("");
 
         if(!isContentSecurityPolicyRelaxed()) {
-            listener.error("To use Living Documentation plugin you need to relax content security policy by setting an EMPTY string on the system property 'hudson.model.DirectoryBrowserSupport.CSP', e.g: when starting Jenkins -Dhudson.model.DirectoryBrowserSupport.CSP=\\\"\\\" or in a pipeline script: System.setProperty(\"hudson.model.DirectoryBrowserSupport.CSP\",\"\") . More details see https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy.  : ");
+            listener.error("To use Living Documentation plugin you need to relax content security policy by setting an EMPTY string on the system property 'hudson.model.DirectoryBrowserSupport.CSP', e.g: when starting Jenkins -Dhudson.model.DirectoryBrowserSupport.CSP=\\\"\\\" or in a pipeline script: System.setProperty(\"hudson.model.DirectoryBrowserSupport.CSP\",\"\"). Note that you can also relax only scripts and css e.g: -Dhudson.model.DirectoryBrowserSupport.CSP=\"sandbox allow-scripts; style-src 'unsafe-inline' *;script-src 'unsafe-inline' *;\". More details see https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy.  : ");
             build.setResult(Result.UNSTABLE);
             return;
         }
@@ -205,8 +203,8 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                     documentationLink = "../" + CukedoctorBaseAction.BASE_URL + "/";
                     pool.execute(runAll(features, documentAttributes, cukedoctorConfig, outputPath));
                 } else {
-                    documentationLink = "../" + build.getNumber() + "/" + CukedoctorBaseAction.BASE_URL + "/documentation." + format.getFormat();
-                    pool.execute(run(features, documentAttributes,cukedoctorConfig , outputPath));
+                    documentationLink = "../" + build.getNumber() + "/" + CukedoctorBaseAction.BASE_URL + "?doctype=" + format.getFormat();
+                    pool.execute(run(features, documentAttributes, cukedoctorConfig, outputPath));
                 }
 
                 CukedoctorBuildAction cukedoctorBuildAction = build.getAction(CukedoctorBuildAction.class);
@@ -248,7 +246,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
      */
     private boolean isContentSecurityPolicyRelaxed() {
         final String contentSecurityPolicy = System.getProperty("hudson.model.DirectoryBrowserSupport.CSP");
-        return contentSecurityPolicy != null && !contentSecurityPolicy.contains("sandbox") && !contentSecurityPolicy.contains("img-src 'self'") && !contentSecurityPolicy.contains("style-src 'self'");
+        return contentSecurityPolicy != null && !contentSecurityPolicy.contains("img-src 'self'") && !contentSecurityPolicy.contains("style-src 'self'");
     }
 
     /**
@@ -279,10 +277,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
                 Asciidoctor asciidoctor = null;
                 try {
-                    /*
-                     * this throws: ERROR: org.jruby.exceptions.RaiseException: (LoadError) no such file to load -- jruby/java
-                     * asciidoctor = Asciidoctor.Factory.create();
-                     */
                     asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
                     attrs.backend("html5");
                     generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
@@ -290,8 +284,9 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                     generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
 
                 } catch (Exception e) {
-                    logger.println(String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause()));
                     e.printStackTrace();
+                    final String errorMessage = String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause());
+                    throw new RuntimeException(errorMessage);
                 } finally {
                     if (asciidoctor != null) {
                         asciidoctor.shutdown();
@@ -313,8 +308,9 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                     asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
                     generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
                 } catch (Exception e) {
-                    logger.println(String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause()));
                     e.printStackTrace();
+                    final String errorMessage = String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause());
+                    throw new RuntimeException(errorMessage);
                 } finally {
                     if (asciidoctor != null) {
                         asciidoctor.shutdown();
