@@ -46,5 +46,5 @@ workflow-job:2.11
 workflow-scm-step:2.4
 workflow-step-api:2.10
 workflow-support:2.14
-cucumber-living-documentation:1.1.1
+cucumber-living-documentation:2.1
 
