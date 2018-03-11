@@ -9,12 +9,12 @@
         <relativePath />
     </parent>
     <artifactId>cucumber-living-documentation</artifactId>
-    <version>2.2-SNAPSHOT</version>
+    <version>1.1.2-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <properties>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-        <jenkins.version>2.73.1</jenkins.version>
+        <jenkins.version>1.642.1</jenkins.version>
         <!-- Java Level to use. Java 7 required when using core >= 1.612 -->
         <java.level>7</java.level>
     </properties>
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>org.asciidoctor</groupId>
             <artifactId>asciidoctorj-pdf</artifactId>
-            <version>1.5.0-alpha.16</version>
+            <version>1.5.0-alpha.11</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.jruby</groupId>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>org.jruby</groupId>
             <artifactId>jruby-complete</artifactId>
-            <version>9.1.15.0</version>
+            <version>1.7.13</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci</groupId>
@@ -176,18 +176,6 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>git-client</artifactId>
             <version>1.19.0</version>
-            <scope>test</scope>
-        </dependency>
-         <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>ssh-credentials</artifactId>
-            <version>1.13</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>structs</artifactId>
-            <version>1.9</version>
             <scope>test</scope>
         </dependency>
 
@@ -315,43 +303,6 @@
             </dependencies>
         </profile>
         
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <version>2.19.1</version>
-                        <configuration>
-                            <skipTests>true</skipTests>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
         <profile>
             <id>release</id>
             <build>
