@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.5</version>
+        <version>3.6</version>
         <relativePath />
     </parent>
     <artifactId>cucumber-living-documentation</artifactId>
@@ -21,7 +21,7 @@
 
     <name>Cucumber Living Documentation Plugin</name>
     <description>Enables Cucumber living documentation on Jenkins</description>
-    <url>https://wiki.jenkins-ci.org/display/JENKINS/Cucumber+Living+Documentation+Plugin</url>
+    <url>https://wiki.jenkins.io/display/JENKINS/Cucumber+Living+Documentation+Plugin</url>
 
     <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
 
@@ -115,12 +115,6 @@
             <artifactId>workflow-cps</artifactId>
             <version>2.13</version>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
