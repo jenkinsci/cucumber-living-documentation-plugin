@@ -15,8 +15,8 @@
     <properties>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
         <jenkins.version>2.73.3</jenkins.version>
-        <!-- Java Level to use. Java 7 required when using core >= 1.612 -->
-        <java.level>7</java.level>
+        <!-- Java Level to use. Java 8 required when using core >= 2.50 -->
+        <java.level>8</java.level>
     </properties>
 
     <name>Cucumber Living Documentation Plugin</name>
