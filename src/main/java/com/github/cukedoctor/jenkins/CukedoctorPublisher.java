@@ -92,9 +92,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
     private boolean hideTags;
 
-    private PrintStream logger;
-
-
     @DataBoundConstructor
     public CukedoctorPublisher(String featuresDir, FormatType format, TocType toc, Boolean numbered, Boolean sectAnchors, String title, boolean hideFeaturesSection, boolean hideSummary,
                                boolean hideScenarioKeyword, boolean hideStepTime, boolean hideTags) {
@@ -134,7 +131,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
             workspaceJsonSourceDir = new FilePath(workspace, featuresDir);
         }
 
-        logger = listener.getLogger();
+        PrintStream logger = listener.getLogger();
 
         logger.println("");
         logger.println("Generating living documentation for " + build.getFullDisplayName() + " with the following arguments: ");
