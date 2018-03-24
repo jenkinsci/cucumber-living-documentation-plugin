@@ -35,6 +35,10 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
     public List<CukedoctorBuildAction> getBuilds() {
         List<CukedoctorBuildAction> builds = new ArrayList<>();
 
+        if(job == null || job.getBuilds() == null) {//will be null after restarts
+            return builds;//to do reload builds from disk
+        }
+
         for (Run<?, ?> build : job.getBuilds()) {
             CukedoctorBuildAction action = build.getAction(CukedoctorBuildAction.class);
             if (action != null) {
