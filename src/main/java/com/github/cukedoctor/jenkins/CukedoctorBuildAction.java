@@ -3,6 +3,7 @@ package com.github.cukedoctor.jenkins;
 import com.github.cukedoctor.jenkins.model.FormatType;
 import hudson.model.Action;
 import hudson.model.Run;
+import jenkins.model.RunAction2;
 import jenkins.tasks.SimpleBuildStep;
 
 import java.io.File;
@@ -10,9 +11,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class CukedoctorBuildAction extends CukedoctorBaseAction implements SimpleBuildStep.LastBuildAction {
+public class CukedoctorBuildAction extends CukedoctorBaseAction implements SimpleBuildStep.LastBuildAction, RunAction2 {
 
-    private final Run<?, ?> build;
+    private transient Run<?, ?> build;
     private FormatType docType;
     private List<CukedoctorProjectAction> projectActions;
 
@@ -57,5 +58,15 @@ public class CukedoctorBuildAction extends CukedoctorBaseAction implements Simpl
 
     public Run<?, ?> getBuild() {
         return build;
+    }
+
+    @Override
+    public void onAttached(Run<?, ?> run) {
+        build = run;
+    }
+
+    @Override
+    public void onLoad(Run<?, ?> run) {
+        onAttached(run);
     }
 }
