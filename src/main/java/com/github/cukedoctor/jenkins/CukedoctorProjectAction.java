@@ -1,21 +1,35 @@
 package com.github.cukedoctor.jenkins;
 
+import com.github.cukedoctor.jenkins.model.CukedoctorBuild;
+import com.github.cukedoctor.jenkins.model.FormatType;
+import hudson.Extension;
+import hudson.model.Action;
 import hudson.model.Job;
 import hudson.model.ProminentProjectAction;
 import hudson.model.Run;
+import jenkins.model.TransientActionFactory;
 
 import java.io.File;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class CukedoctorProjectAction extends CukedoctorBaseAction implements ProminentProjectAction {
 
-    private transient Job<?, ?> job;
+    private final transient Job<?, ?> job;
 
     private String jobName;
 
-    public CukedoctorProjectAction(Job<?, ?> job) {
+    private final List<CukedoctorBuild> cukedoctorBuilds;
+
+    public CukedoctorProjectAction(Job<?, ?> job, List<CukedoctorBuild> cukedoctorBuilds) {
         this.job = job;
+        this.cukedoctorBuilds = cukedoctorBuilds;
     }
 
     public String job() {
@@ -26,54 +40,43 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
     }
 
 
-    @Override
     protected String getTitle() {
         return this.job.getDisplayName();
     }
 
 
-    public List<CukedoctorBuildAction> getBuilds() {
-        List<CukedoctorBuildAction> builds = new ArrayList<>();
+    public List<CukedoctorBuild> getBuilds() {
+        return cukedoctorBuilds;
+    }
 
-        if(job == null || job.getBuilds() == null) {//will be null after restarts
-            return builds;//to do reload builds from disk
-        }
 
-        for (Run<?, ?> build : job.getBuilds()) {
-            CukedoctorBuildAction action = build.getAction(CukedoctorBuildAction.class);
-            if (action != null) {
-                builds.add(action);
+    @Extension
+    public static class CukedoctorActionFactory extends TransientActionFactory<Job<?, ?>> {
+
+        @Override
+        public Collection<? extends Action> createFor(Job<?, ?> j) {
+            List<CukedoctorBuild> cukedoctorBuilds = new ArrayList<>();
+
+            //collects the list of builds that published living docs to show on the documentation history page
+            if (j.getBuilds() != null && !j.getBuilds().isEmpty()) {
+                for (Run<?, ?> build : j.getBuilds()) {
+                    CukedoctorBuildAction cukedoctorBuildAction = build.getAction(CukedoctorBuildAction.class);
+                    if (cukedoctorBuildAction != null) {
+                        cukedoctorBuilds.add(cukedoctorBuildAction.getCukedoctorBuild());
+                    }
+                }
             }
-        }
-
-        return builds;
-    }
-
-    @Override
-    protected File dir() {
-        File dir = null;
-        if (job != null && this.job.getLastCompletedBuild() != null) {
-            Run<?, ?> run = this.job.getLastCompletedBuild();
-            File archiveDir = getBuildArchiveDir(run);
-            if (archiveDir.exists()) {
-                dir = archiveDir;
-            } else {
-                dir = getProjectArchiveDir();
+            if (cukedoctorBuilds.isEmpty()) {
+                return Collections.singleton(null);
             }
-        } else {
-            dir = getProjectArchiveDir();
+            return Collections.singleton(new CukedoctorProjectAction(j, cukedoctorBuilds));
         }
 
-        return dir;
+        @Override
+        public Class type() {
+            return Job.class;
+        }
     }
 
-    private File getProjectArchiveDir() {
-        return new File(job.getRootDir(), CukedoctorBaseAction.BASE_URL);
-    }
-
-    /** Gets the directory where docs are stored for the given build. */
-    private File getBuildArchiveDir(Run<?, ?> run) {
-        return new File(run.getRootDir(), CukedoctorBaseAction.BASE_URL);
-    }
 
 }

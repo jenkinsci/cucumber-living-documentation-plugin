@@ -1,32 +1,19 @@
 package com.github.cukedoctor.jenkins;
 
-import com.github.cukedoctor.jenkins.model.FormatType;
-import hudson.model.Action;
+import com.github.cukedoctor.jenkins.model.CukedoctorBuild;
 import hudson.model.Run;
 import jenkins.model.RunAction2;
-import jenkins.tasks.SimpleBuildStep;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
-public class CukedoctorBuildAction extends CukedoctorBaseAction implements SimpleBuildStep.LastBuildAction, RunAction2 {
+public class CukedoctorBuildAction extends CukedoctorBaseAction implements RunAction2 {
 
     private transient Run<?, ?> build;
-    private FormatType docType;
-    private List<CukedoctorProjectAction> projectActions;
+    private final CukedoctorBuild cukedoctorBuild;
 
-    public CukedoctorBuildAction(Run<?, ?> build) {
-        docType = FormatType.HTML;
+    public CukedoctorBuildAction(Run<?, ?> build, CukedoctorBuild cukedoctorBuild) {
         this.build = build;
-        projectActions = new ArrayList<>();
-        projectActions.add(new CukedoctorProjectAction(build.getParent()));
-     }
-
-    public CukedoctorBuildAction(Run<?, ?> build, FormatType docType) {
-        this(build);
-        this.docType = docType;
+        this.cukedoctorBuild = cukedoctorBuild;
      }
 
     @Override
@@ -34,31 +21,22 @@ public class CukedoctorBuildAction extends CukedoctorBaseAction implements Simpl
         return this.build.getDisplayName();
     }
 
-    @Override
-    protected File dir() {
-        return new File(build.getRootDir(), BASE_URL +"/documentation."+(isHtmlDocs() ? "html":"pdf"));
+    private File getDocsPath() {
+        return new File(build.getRootDir(), BASE_URL +"/documentation."+(cukedoctorBuild.isHtmlDocs() ? "html":"pdf"));
     }
 
-    @Override
-    public Collection<? extends Action> getProjectActions() {
-        return this.projectActions;
+    public DocsRenderer getDocs() {
+        return new DocsRenderer(cukedoctorBuild, getDocsPath(), build.getFullDisplayName());
     }
 
-    public void addAction(CukedoctorProjectAction action) {
-        projectActions.add(action);
-    }
-
-    public boolean isHtmlDocs() {
-        return FormatType.HTML.equals(docType) || FormatType.ALL.equals(docType);
-    }
-
-    public boolean isPdfDocs() {
-        return FormatType.PDF.equals(docType) || FormatType.ALL.equals(docType);
+    public CukedoctorBuild getCukedoctorBuild() {
+        return cukedoctorBuild;
     }
 
     public Run<?, ?> getBuild() {
         return build;
     }
+
 
     @Override
     public void onAttached(Run<?, ?> run) {

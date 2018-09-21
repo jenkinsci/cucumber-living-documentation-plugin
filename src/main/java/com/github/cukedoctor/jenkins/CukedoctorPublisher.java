@@ -30,6 +30,7 @@ import com.github.cukedoctor.api.model.Feature;
 import com.github.cukedoctor.config.CukedoctorConfig;
 import com.github.cukedoctor.config.GlobalConfig;
 import com.github.cukedoctor.extension.CukedoctorExtensionRegistry;
+import com.github.cukedoctor.jenkins.model.CukedoctorBuild;
 import com.github.cukedoctor.jenkins.model.FormatType;
 import com.github.cukedoctor.jenkins.model.TocType;
 import com.github.cukedoctor.parser.FeatureParser;
@@ -193,21 +194,12 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
             try {
                 String outputPath = docsDirectory.getAbsolutePath();
-                CukedoctorBuildAction action = new CukedoctorBuildAction(build, format);
                 final ExecutorService pool = Executors.newFixedThreadPool(4);
+                documentationLink = "../" + build.getNumber() + "/" + CukedoctorBaseAction.BASE_URL + "/docs";
                 if ("all".equals(format.getFormat())) { //when format is 'all' send user to the list of documentation published by the job
-                    documentationLink = "../" + CukedoctorBaseAction.BASE_URL + "/";
                     pool.execute(runAll(features, documentAttributes, cukedoctorConfig, outputPath));
                 } else {
-                    documentationLink = "../" + build.getNumber() + "/" + CukedoctorBaseAction.BASE_URL + "?doctype=" + format.getFormat();
                     pool.execute(run(features, documentAttributes, cukedoctorConfig, outputPath));
-                }
-
-                CukedoctorBuildAction cukedoctorBuildAction = build.getAction(CukedoctorBuildAction.class);
-                if (cukedoctorBuildAction != null) {
-                    cukedoctorBuildAction.addAction(new CukedoctorProjectAction(build.getParent()));
-                } else {
-                    build.addAction(action);
                 }
 
                 pool.shutdown();
@@ -222,6 +214,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                 result = Result.FAILURE;
             }
             if (result.equals(Result.SUCCESS)) {
+                build.addAction(new CukedoctorBuildAction(build, new CukedoctorBuild(format,build.number, build.getTime())));
                 listener.hyperlink(documentationLink, "Documentation generated successfully!");
                 logger.println("");
             }

@@ -47,18 +47,18 @@
                                 <j:forEach items="${it.builds}" var="build">
                                     <tr class="build-row  single-line">
                                         <td>
-                                            <b>#${build.build.number}</b> (<fmt:formatDate value="${build.build.time}" type="both" />)
+                                            <b>#${build.buildNumber}</b> (<fmt:formatDate value="${build.buildTime}" type="both" />)
                                         </td>
 
                                          <td>
                                           <j:if test="${build.isHtmlDocs()}">
-                                             <a href="../${build.build.number}/cucumber-living-documentation?doctype=html" target="_blank">
+                                             <a href="../${build.buildNumber}/cucumber-living-documentation/docs" target="_blank">
                                                        <img src="${rootURL}/plugin/cucumber-living-documentation/HTML5.png" alt="HTML" height="42" width="42"/>
                                              </a>
                                           </j:if>
 
                                            <j:if test="${build.isPdfDocs()}">
-                                                  <a href="../${build.build.number}/cucumber-living-documentation?doctype=pdf" target="_blank">
+                                                  <a href="../${build.buildNumber}/cucumber-living-documentation/docs" target="_blank">
                                                        <img src="${rootURL}/plugin/cucumber-living-documentation/PDF.png" alt="PDF" height="40" width="36"/>
                                                  </a>
                                             </j:if>
