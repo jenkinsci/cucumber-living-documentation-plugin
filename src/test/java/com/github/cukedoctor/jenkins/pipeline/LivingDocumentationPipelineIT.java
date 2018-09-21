@@ -29,18 +29,6 @@ public class LivingDocumentationPipelineIT {
         j.assertLogContains("No features Found", run);
     }
 
-    @Test
-    public void shouldNotPublishLivingDocumentationWithoutRelaxedContentSecurityPolicy() throws Exception {
-        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "living-documentation");
-        job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
-                "node {",
-                "svn 'https://subversion.assembla.com/svn/cucumber-json-files/trunk'",
-                "    step([$class: 'CukedoctorPublisher', featuresDir: '', format: 'HTML', hideFeaturesSection: false, hideScenarioKeyword: false, hideStepTime: false, hideSummary: false, hideTags: false, numbered: true, sectAnchors: true, title: 'Living Documentation', toc: 'RIGHT'])",
-                "}"), "\n"),true));
-        WorkflowRun run = j.assertBuildStatus(Result.SUCCESS,job.scheduleBuild2(0).get());
-        j.assertLogContains("ERROR: To use Living Documentation plugin you need to relax content security policy", run);
-    }
-
 
     @Test
     public void shouldPublishLivingDocumentationViaPipeline() throws Exception {
