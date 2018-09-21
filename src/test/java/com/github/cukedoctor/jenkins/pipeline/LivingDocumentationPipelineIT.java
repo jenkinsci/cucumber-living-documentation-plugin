@@ -17,11 +17,6 @@ public class LivingDocumentationPipelineIT {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    @Before
-    public void setup() {
-        System.setProperty("hudson.model.DirectoryBrowserSupport.CSP","");
-    }
-
 
     @Test
     public void shouldNotPublishLivingDocumentationWhenNoFeaturesAreFound() throws Exception {
