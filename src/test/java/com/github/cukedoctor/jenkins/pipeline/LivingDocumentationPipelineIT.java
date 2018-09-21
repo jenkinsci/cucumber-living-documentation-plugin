@@ -31,7 +31,6 @@ public class LivingDocumentationPipelineIT {
 
     @Test
     public void shouldNotPublishLivingDocumentationWithoutRelaxedContentSecurityPolicy() throws Exception {
-        System.setProperty("hudson.model.DirectoryBrowserSupport.CSP","sandbox; default-src 'none'; img-src 'self'; style-src 'self';");
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "living-documentation");
         job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
                 "node {",
