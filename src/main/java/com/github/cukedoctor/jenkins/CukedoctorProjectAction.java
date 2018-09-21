@@ -1,7 +1,6 @@
 package com.github.cukedoctor.jenkins;
 
 import com.github.cukedoctor.jenkins.model.CukedoctorBuild;
-import com.github.cukedoctor.jenkins.model.FormatType;
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.Job;
@@ -9,11 +8,6 @@ import hudson.model.ProminentProjectAction;
 import hudson.model.Run;
 import jenkins.model.TransientActionFactory;
 
-import java.io.File;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
