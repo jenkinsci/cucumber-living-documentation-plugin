@@ -1,6 +1,7 @@
 package com.github.cukedoctor.jenkins;
 
 import com.github.cukedoctor.jenkins.model.CukedoctorBuild;
+import com.github.cukedoctor.jenkins.model.FormatType;
 import hudson.model.Run;
 import jenkins.model.RunAction2;
 
@@ -22,11 +23,19 @@ public class CukedoctorBuildAction extends CukedoctorBaseAction implements RunAc
     }
 
     private File getDocsPath() {
-        return new File(build.getRootDir(), BASE_URL +"/documentation."+(cukedoctorBuild.isHtmlDocs() ? "html":"pdf"));
+        return new File(build.getRootDir(), BASE_URL +"/documentation"+(cukedoctorBuild.getFormat().equals(FormatType.HTML) ? ".html": cukedoctorBuild.getFormat().equals(FormatType.PDF) ? ".pdf":"-all.html"));
     }
 
     public DocsRenderer getDocs() {
-        return new DocsRenderer(cukedoctorBuild, getDocsPath(), build.getFullDisplayName());
+        return new DocsRenderer(getDocsPath(), build.getFullDisplayName());
+    }
+
+    public DocsRenderer getDocsHtml() {
+        return new DocsRenderer(new File(build.getRootDir(), BASE_URL +"/documentation.html"), build.getFullDisplayName());
+    }
+
+    public DocsRenderer getDocsPdf() {
+        return new DocsRenderer(new File(build.getRootDir(), BASE_URL +"/documentation.pdf"), build.getFullDisplayName());
     }
 
     public CukedoctorBuild getCukedoctorBuild() {

@@ -46,6 +46,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
+import hudson.util.IOUtils;
 import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
 import org.asciidoctor.Asciidoctor;
@@ -57,9 +58,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.*;
@@ -149,7 +148,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         logger.println("Hide tags: " + Boolean.toString(hideTags));
         logger.println("");
 
-        if(!isContentSecurityPolicyRelaxed()) {
+        if (!isContentSecurityPolicyRelaxed()) {
             listener.error("To use Living Documentation plugin you need to relax content security policy by setting an EMPTY string on the system property 'hudson.model.DirectoryBrowserSupport.CSP', e.g: when starting Jenkins -Dhudson.model.DirectoryBrowserSupport.CSP=\\\"\\\" or in a pipeline script: System.setProperty(\"hudson.model.DirectoryBrowserSupport.CSP\",\"\"). Note that you can also relax only scripts and css e.g: -Dhudson.model.DirectoryBrowserSupport.CSP=\"sandbox allow-scripts; style-src 'unsafe-inline' *;script-src 'unsafe-inline' *;\". More details see https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy.  : ");
             return;
         }
@@ -186,9 +185,9 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
             globalConfig.getLayoutConfig().setHideTags(hideTags);
 
             CukedoctorConfig cukedoctorConfig = new CukedoctorConfig()
-            .setIntroChapterDir(workspaceDocsDir.getRemote())
-            .setIntroChapterRelativePath(workspaceDocsDir.getRemote())
-            .setCustomizationDir(workspaceDocsDir.getRemote());
+                    .setIntroChapterDir(workspaceDocsDir.getRemote())
+                    .setIntroChapterRelativePath(workspaceDocsDir.getRemote())
+                    .setCustomizationDir(workspaceDocsDir.getRemote());
 
             String documentationLink = "";
 
@@ -214,7 +213,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                 result = Result.FAILURE;
             }
             if (result.equals(Result.SUCCESS)) {
-                build.addAction(new CukedoctorBuildAction(build, new CukedoctorBuild(format,build.number, build.getTime())));
+                build.addAction(new CukedoctorBuildAction(build, new CukedoctorBuild(format, build.number, build.getTime())));
                 listener.hyperlink(documentationLink, "Documentation generated successfully!");
                 logger.println("");
             }
@@ -227,12 +226,13 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         build.setResult(result);
     }
 
+
     /**
      * Content security policy is relaxed when no policy is set (e.g a blank string) or does not contains restricting rules like 'sandbox'
-     *
+     * <p>
      * Note that no policy (null system property) means that it is NOT relaxed because the default policy is used: "sandbox; default-src 'none'; img-src 'self'; style-src 'self';"
-     *
      */
+
     private boolean isContentSecurityPolicyRelaxed() {
         final String contentSecurityPolicy = System.getProperty("hudson.model.DirectoryBrowserSupport.CSP");
         return contentSecurityPolicy != null && !contentSecurityPolicy.contains("img-src 'self'") && !contentSecurityPolicy.contains("style-src 'self'");

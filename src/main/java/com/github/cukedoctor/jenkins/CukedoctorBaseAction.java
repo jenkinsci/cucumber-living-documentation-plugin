@@ -7,6 +7,7 @@ public abstract class CukedoctorBaseAction {
     protected static final String BASE_URL = "cucumber-living-documentation";
 
     protected static final String TITLE = "Living documentation";
+    public static final String ALL_DOCUMENTATION = "documentation-all.html";
 
 
     public String getUrlName() {
