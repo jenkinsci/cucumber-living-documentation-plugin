@@ -61,7 +61,7 @@ public class CukedoctorProjectAction extends CukedoctorBaseAction implements Pro
                 }
             }
             if (cukedoctorBuilds.isEmpty()) {
-                return Collections.singleton(null);
+                return Collections.emptyList();
             }
             return Collections.singleton(new CukedoctorProjectAction(j, cukedoctorBuilds));
         }
