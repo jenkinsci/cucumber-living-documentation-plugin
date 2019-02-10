@@ -13,16 +13,7 @@ image:https://travis-ci.org/jenkinsci/cucumber-living-documentation-plugin.svg[B
 image:https://coveralls.io/repos/jenkinsci/cucumber-living-documentation-plugin/badge.svg?branch=master&service=github[Coverage, link=https://coveralls.io/r/jenkinsci/cucumber-living-documentation-plugin]
 
 BDD living documentation on your jenkins build via https://github.com/rmpestano/cukedoctor[Cukedoctor^].
-
-IMPORTANT: This plugin only works if https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy[*content security policy is relaxed*^] as described in https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy#ConfiguringContentSecurityPolicy-RelaxingTheRules[this section^]. Following is an example of relaxed policy which works: `-Dhudson.model.DirectoryBrowserSupport.CSP="sandbox allow-scripts; style-src 'unsafe-inline' *;script-src 'unsafe-inline' *;"`.
-
-[IMPORTANT]
-====
-Versions `2.x` of the plugin uses Jenkins `2.73.1` as baseline (https://github.com/jenkinsci/cucumber-living-documentation-plugin/issues/18[see issue #17^]), for older Jenkins installations use version *1.1.1* of this plugin, otherwise will face the error `java.lang.NoSuchMethodError: jnr.constants.platform.OpenFlags.defined()Z` when generating living documentation.
-
-TIP: The *PDF* documentation generation is way faster on version `2.x`.
-====
-
+ 
 == Introduction
 
 The Cucumber living documentation plugin basically scans for Cucumber json output files in jenkins workspace in order to generate living documentation from it.
