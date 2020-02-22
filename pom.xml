@@ -22,7 +22,7 @@
 
     <name>Cucumber Living Documentation Plugin</name>
     <description>Enables Cucumber living documentation on Jenkins</description>
-    <url>https://wiki.jenkins.io/display/JENKINS/Cucumber+Living+Documentation+Plugin</url>
+    <url>https://github.com/jenkinsci/cucumber-living-documentation-plugin</url>
 
     <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
 
