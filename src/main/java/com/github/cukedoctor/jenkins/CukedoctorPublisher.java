@@ -23,41 +23,17 @@
  */
 package com.github.cukedoctor.jenkins;
 
-import static com.github.cukedoctor.extension.CukedoctorExtensionRegistry.CUKEDOCTOR_EXTENSION_GROUP_NAME;
-import static com.github.cukedoctor.util.Assert.hasText;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import org.asciidoctor.Asciidoctor;
-import org.asciidoctor.OptionsBuilder;
-import org.asciidoctor.SafeMode;
-import org.asciidoctor.extension.ExtensionGroup;
-import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-
 import com.github.cukedoctor.Cukedoctor;
 import com.github.cukedoctor.api.CukedoctorConverter;
 import com.github.cukedoctor.api.DocumentAttributes;
 import com.github.cukedoctor.api.model.Feature;
 import com.github.cukedoctor.config.CukedoctorConfig;
 import com.github.cukedoctor.config.GlobalConfig;
-import com.github.cukedoctor.extension.CukedoctorExtensionRegistry;
 import com.github.cukedoctor.jenkins.model.CukedoctorBuild;
 import com.github.cukedoctor.jenkins.model.FormatType;
 import com.github.cukedoctor.jenkins.model.TocType;
 import com.github.cukedoctor.parser.FeatureParser;
 import com.github.cukedoctor.util.FileUtil;
-
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -71,6 +47,27 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
+import org.asciidoctor.Asciidoctor;
+import org.asciidoctor.OptionsBuilder;
+import org.asciidoctor.SafeMode;
+import org.asciidoctor.extension.ExtensionGroup;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import static com.github.cukedoctor.extension.CukedoctorExtensionRegistry.CUKEDOCTOR_EXTENSION_GROUP_NAME;
+import static com.github.cukedoctor.util.Assert.hasText;
 
 /**
  * @author rmpestano
@@ -274,7 +271,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         return () -> {
             Asciidoctor asciidoctor = null;
             try {
-                asciidoctor = org.asciidoctor.jruby.AsciidoctorJRuby.Factory.create(CukedoctorPublisher.class.getClassLoader());
+                asciidoctor = Asciidoctor.Factory.create();
                 generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
             } catch (Exception e) {
                 e.printStackTrace();
