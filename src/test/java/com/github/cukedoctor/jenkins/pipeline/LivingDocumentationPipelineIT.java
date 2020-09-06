@@ -1,22 +1,22 @@
 package com.github.cukedoctor.jenkins.pipeline;
 
-import hudson.model.Result;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import java.io.File;
 import java.util.Arrays;
+
+import static org.junit.Assert.assertTrue;
 
 public class LivingDocumentationPipelineIT {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
-
 
     @Test
     public void shouldNotPublishLivingDocumentationWhenNoFeaturesAreFound() throws Exception {
@@ -41,6 +41,7 @@ public class LivingDocumentationPipelineIT {
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("Found 4 feature(s)...", run);
         j.assertLogContains("Documentation generated successfully!", run);
+        assertTrue(new File (run.getRootDir().getAbsolutePath()+"/cucumber-living-documentation/documentation.html").exists());
     }
 
     @Test
@@ -54,7 +55,7 @@ public class LivingDocumentationPipelineIT {
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("Found 4 feature(s)...", run);
         j.assertLogContains("Documentation generated successfully!", run);
+        assertTrue(new File (run.getRootDir().getAbsolutePath()+"/cucumber-living-documentation/documentation.pdf").exists());
     }
-
 
 }
