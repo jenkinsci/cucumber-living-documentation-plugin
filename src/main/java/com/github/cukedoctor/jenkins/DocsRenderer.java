@@ -25,10 +25,9 @@ public class DocsRenderer implements Serializable {
     }
 
     /**
-     * @param request
-     * @param response
-     * @throws IOException
-     * @throws ServletException
+     * @param request the request
+     * @param response response
+     * @throws IOException if documentation to render is not found
      */
     public void doIndex(StaplerRequest request, StaplerResponse response)
         throws IOException, ServletException {

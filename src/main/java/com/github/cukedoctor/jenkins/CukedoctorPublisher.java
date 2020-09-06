@@ -23,6 +23,7 @@
  */
 package com.github.cukedoctor.jenkins;
 
+import static com.github.cukedoctor.extension.CukedoctorExtensionRegistry.CUKEDOCTOR_EXTENSION_GROUP_NAME;
 import static com.github.cukedoctor.util.Assert.hasText;
 
 import java.io.File;
@@ -37,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.SafeMode;
+import org.asciidoctor.extension.ExtensionGroup;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -138,7 +140,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
         PrintStream logger = listener.getLogger();
 
-        logger.println("");
         logger.println("Generating living documentation for " + build.getFullDisplayName() + " with the following arguments: ");
         logger.println("Features dir: " + (hasText(featuresDir) ? featuresDir : ""));
         logger.println("Format: " + format.getFormat());
@@ -190,7 +191,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                     .setCustomizationDir(workspaceDocsDir.getRemote());
 
             String documentationLink = "";
-
             try {
                 String outputPath = docsDirectory.getAbsolutePath();
                 final ExecutorService pool = Executors.newFixedThreadPool(4);
@@ -200,7 +200,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
                 } else {
                     pool.execute(run(features, documentAttributes, cukedoctorConfig, outputPath));
                 }
-
                 pool.shutdown();
                 if (format.equals(FormatType.HTML)) {
                     pool.awaitTermination(5, TimeUnit.MINUTES);
@@ -220,7 +219,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
         } else {
             logger.println(String.format("No features Found in %s. %sLiving documentation will not be generated.", workspaceJsonSourceDir.getRemote(), "\n"));
-
         }
 
         build.setResult(result);
@@ -248,27 +246,23 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
      * @return
      */
     private Runnable runAll(final List<Feature> features, final DocumentAttributes attrs, final CukedoctorConfig cukedoctorConfig, final String outputPath) {
-        return new Runnable() {
+        return () -> {
 
-            @Override
-            public void run() {
+            Asciidoctor asciidoctor = null;
+            try {
+                asciidoctor = org.asciidoctor.jruby.AsciidoctorJRuby.Factory.create(CukedoctorPublisher.class.getClassLoader());
+                attrs.backend("html5");
+                generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
+                attrs.backend("pdf");
+                generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
 
-                Asciidoctor asciidoctor = null;
-                try {
-                    asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
-                    attrs.backend("html5");
-                    generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
-                    attrs.backend("pdf");
-                    generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    final String errorMessage = String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause());
-                    throw new RuntimeException(errorMessage);
-                } finally {
-                    if (asciidoctor != null) {
-                        asciidoctor.shutdown();
-                    }
+            } catch (Exception e) {
+                e.printStackTrace();
+                final String errorMessage = String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause());
+                throw new RuntimeException(errorMessage);
+            } finally {
+                if (asciidoctor != null) {
+                    asciidoctor.shutdown();
                 }
             }
         };
@@ -277,38 +271,38 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
 
     private Runnable run(final List<Feature> features, final DocumentAttributes attrs, final CukedoctorConfig cukedoctorConfig, final String outputPath) {
-        return new Runnable() {
-
-            @Override
-            public void run() {
-                Asciidoctor asciidoctor = null;
-                try {
-                    asciidoctor = Asciidoctor.Factory.create(CukedoctorPublisher.class.getClassLoader());
-                    generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    final String errorMessage = String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause());
-                    throw new RuntimeException(errorMessage);
-                } finally {
-                    if (asciidoctor != null) {
-                        asciidoctor.shutdown();
-                    }
+        return () -> {
+            Asciidoctor asciidoctor = null;
+            try {
+                asciidoctor = org.asciidoctor.jruby.AsciidoctorJRuby.Factory.create(CukedoctorPublisher.class.getClassLoader());
+                generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
+            } catch (Exception e) {
+                e.printStackTrace();
+                final String errorMessage = String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause());
+                throw new RuntimeException(errorMessage);
+            } finally {
+                if (asciidoctor != null) {
+                    asciidoctor.shutdown();
                 }
             }
         };
 
     }
 
-
     protected synchronized void generateDocumentation(List<Feature> features, DocumentAttributes attrs, CukedoctorConfig cukedoctorConfig, String outputPath, Asciidoctor asciidoctor) {
-        asciidoctor.unregisterAllExtensions();
-        if (!attrs.getBackend().equalsIgnoreCase("pdf")) {
-            new CukedoctorExtensionRegistry().register(asciidoctor);
+        ExtensionGroup cukedoctorExtensionGroup = asciidoctor.createGroup(CUKEDOCTOR_EXTENSION_GROUP_NAME);
+        if (attrs.getBackend().equalsIgnoreCase("pdf")) {
+            cukedoctorExtensionGroup.unregister();
+        } else {
+            cukedoctorExtensionGroup.register();
         }
         CukedoctorConverter converter = Cukedoctor.instance(features, attrs, cukedoctorConfig);
         String doc = converter.renderDocumentation();
         File adocFile = FileUtil.saveFile(outputPath + "/documentation.adoc", doc);
-        asciidoctor.convertFile(adocFile, OptionsBuilder.options().backend(attrs.getBackend()).safe(SafeMode.SAFE).asMap());
+        asciidoctor.convertFile(adocFile, OptionsBuilder.options()
+                .backend(attrs.getBackend())
+                .attributes(attrs.toMap())
+                .safe(SafeMode.SAFE).asMap());
     }
 
     @Override
