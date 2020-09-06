@@ -247,7 +247,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
             Asciidoctor asciidoctor = null;
             try {
-                asciidoctor = org.asciidoctor.jruby.AsciidoctorJRuby.Factory.create(CukedoctorPublisher.class.getClassLoader());
+                asciidoctor = Asciidoctor.Factory.create();
                 attrs.backend("html5");
                 generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
                 attrs.backend("pdf");
@@ -265,7 +265,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         };
 
     }
-
 
     private Runnable run(final List<Feature> features, final DocumentAttributes attrs, final CukedoctorConfig cukedoctorConfig, final String outputPath) {
         return () -> {
