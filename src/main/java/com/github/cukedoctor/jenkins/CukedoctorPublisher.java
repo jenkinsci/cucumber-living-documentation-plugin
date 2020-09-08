@@ -244,15 +244,13 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
      */
     private Runnable runAll(final List<Feature> features, final DocumentAttributes attrs, final CukedoctorConfig cukedoctorConfig, final String outputPath) {
         return () -> {
-
             Asciidoctor asciidoctor = null;
             try {
-                asciidoctor = Asciidoctor.Factory.create();
+                asciidoctor = getAsciidoctor();
                 attrs.backend("html5");
                 generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
                 attrs.backend("pdf");
                 generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
-
             } catch (Exception e) {
                 e.printStackTrace();
                 final String errorMessage = String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause());
@@ -270,7 +268,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         return () -> {
             Asciidoctor asciidoctor = null;
             try {
-                asciidoctor = Asciidoctor.Factory.create();
+                asciidoctor = getAsciidoctor();
                 generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -285,12 +283,23 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
     }
 
+    private Asciidoctor getAsciidoctor() {
+        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+        Asciidoctor asciidoctor;
+        try {
+            ClassLoader classLoader = CukedoctorPublisher.class.getClassLoader();
+            Thread.currentThread().setContextClassLoader(classLoader);
+            asciidoctor = org.asciidoctor.jruby.AsciidoctorJRuby.Factory.create(classLoader);
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldCl);
+        }
+        return asciidoctor;
+    }
+
     protected synchronized void generateDocumentation(List<Feature> features, DocumentAttributes attrs, CukedoctorConfig cukedoctorConfig, String outputPath, Asciidoctor asciidoctor) {
         ExtensionGroup cukedoctorExtensionGroup = asciidoctor.createGroup(CUKEDOCTOR_EXTENSION_GROUP_NAME);
         if (attrs.getBackend().equalsIgnoreCase("pdf")) {
             cukedoctorExtensionGroup.unregister();
-        } else {
-            cukedoctorExtensionGroup.register();
         }
         CukedoctorConverter converter = Cukedoctor.instance(features, attrs, cukedoctorConfig);
         String doc = converter.renderDocumentation();

@@ -24,7 +24,7 @@ public class LivingDocumentationPipelineIT {
         job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
                 "node {",
                 "    step([$class: 'CukedoctorPublisher', featuresDir: '', format: 'HTML', hideFeaturesSection: false, hideScenarioKeyword: false, hideStepTime: false, hideSummary: false, hideTags: false, numbered: true, sectAnchors: true, title: 'Living Documentation', toc: 'RIGHT'])",
-                "}"), "\n"),true));
+                "}"), "\n"), true));
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("No features Found", run);
     }
@@ -37,11 +37,12 @@ public class LivingDocumentationPipelineIT {
                 "node {",
                 "svn 'https://subversion.assembla.com/svn/cucumber-json-files/trunk'",
                 "    step([$class: 'CukedoctorPublisher', featuresDir: 'cukedoctor', format: 'HTML', hideFeaturesSection: false, hideScenarioKeyword: false, hideStepTime: false, hideSummary: false, hideTags: false, numbered: true, sectAnchors: true, title: 'Living Documentation', toc: 'RIGHT'])",
-                "}"), "\n"),true));
+                "}"), "\n"), true));
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("Found 4 feature(s)...", run);
         j.assertLogContains("Documentation generated successfully!", run);
-        assertTrue(new File (run.getRootDir().getAbsolutePath()+"/cucumber-living-documentation/documentation.html").exists());
+        assertTrue(new File(run.getRootDir().getAbsolutePath() + "/cucumber-living-documentation/documentation.html").exists());
+        assertTrue(new File(run.getRootDir().getAbsolutePath() + "/cucumber-living-documentation/themes").exists());
     }
 
     @Test
@@ -51,11 +52,11 @@ public class LivingDocumentationPipelineIT {
                 "node {",
                 "svn 'https://subversion.assembla.com/svn/cucumber-json-files/trunk'",
                 "    step([$class: 'CukedoctorPublisher', featuresDir: 'cukedoctor', format: 'PDF', hideFeaturesSection: false, hideScenarioKeyword: false, hideStepTime: false, hideSummary: false, hideTags: false, numbered: true, sectAnchors: true, title: 'Living Documentation', toc: 'RIGHT'])",
-                "}"), "\n"),true));
+                "}"), "\n"), true));
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("Found 4 feature(s)...", run);
         j.assertLogContains("Documentation generated successfully!", run);
-        assertTrue(new File (run.getRootDir().getAbsolutePath()+"/cucumber-living-documentation/documentation.pdf").exists());
+        assertTrue(new File(run.getRootDir().getAbsolutePath() + "/cucumber-living-documentation/documentation.pdf").exists());
     }
 
 }

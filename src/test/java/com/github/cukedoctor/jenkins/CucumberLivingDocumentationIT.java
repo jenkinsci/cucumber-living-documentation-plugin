@@ -46,6 +46,7 @@ public class CucumberLivingDocumentationIT {
 		jenkins.assertLogContains("Found 4 feature(s)...",build);
 		jenkins.assertLogContains("Documentation generated successfully!",build);
         assertTrue(new File(build.getRootDir().getAbsolutePath()+"/cucumber-living-documentation/documentation.html").exists());
+        assertTrue(new File(build.getRootDir().getAbsolutePath()+"/cucumber-living-documentation/themes").exists());
     }
 
     @Test
