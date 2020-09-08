@@ -69,7 +69,6 @@ public class DocsRenderer implements Serializable {
         Elements head = doc.getElementsByTag("head");
         head.select("style").remove();
         head.append("<style> " + themeContent + "</style>");
-
         try (InputStream is = new ByteArrayInputStream(doc.toString().getBytes("UTF-8"))) {
             response.addHeader("Content-Type", "text/html");
             response.addHeader("Content-Disposition", "inline; filename=" + fileName);
@@ -79,7 +78,6 @@ public class DocsRenderer implements Serializable {
         }
     }
 
-
     private void createAllDocsPage(File allDocsPath) {
         if (!allDocsPath.exists()) {
             try (InputStream is = getClass().getResourceAsStream("/" + CukedoctorBaseAction.ALL_DOCUMENTATION)) {
@@ -88,7 +86,6 @@ public class DocsRenderer implements Serializable {
                 e.printStackTrace();
             }
         }
-
     }
 
 }
