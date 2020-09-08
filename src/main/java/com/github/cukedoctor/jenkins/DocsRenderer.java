@@ -32,9 +32,7 @@ public class DocsRenderer implements Serializable {
      */
     public void doIndex(StaplerRequest request, StaplerResponse response)
             throws IOException, ServletException {
-
         final String fileName = docsPath.getName();
-
         final boolean isAllDocsPage = fileName.endsWith("all.html");
         final boolean isHtmlDoc = fileName.endsWith(".html") && !isAllDocsPage;
         if (isHtmlDoc) {
