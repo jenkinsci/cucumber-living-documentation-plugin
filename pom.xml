@@ -49,41 +49,11 @@
         <tag>2.2.0</tag>
     </scm>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.github.jnr</groupId>
-                <artifactId>jnr-posix</artifactId>
-                <version>3.0.45</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.jnr</groupId>
-                <artifactId>jnr-constants</artifactId>
-                <version>0.9.9</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>com.github.cukedoctor</groupId>
-            <artifactId>cukedoctor-converter</artifactId>
-            <version>3.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.asciidoctor</groupId>
-            <artifactId>asciidoctorj-pdf</artifactId>
-            <version>1.5.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.asciidoctor</groupId>
-            <artifactId>asciidoctorj</artifactId>
-            <version>2.4.0</version>
-        </dependency>
-       <dependency>
-            <groupId>org.jruby</groupId>
-            <artifactId>jruby-complete</artifactId>
-            <version>9.2.11.1</version>
+            <artifactId>cukedoctor-main</artifactId>
+            <version>3.5.1</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci</groupId>

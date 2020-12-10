@@ -24,6 +24,7 @@
 package com.github.cukedoctor.jenkins;
 
 import com.github.cukedoctor.Cukedoctor;
+import com.github.cukedoctor.CukedoctorMain;
 import com.github.cukedoctor.api.CukedoctorConverter;
 import com.github.cukedoctor.api.DocumentAttributes;
 import com.github.cukedoctor.api.model.Feature;
@@ -96,6 +97,8 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
     private boolean hideTags;
 
+    private CukedoctorMain cukedoctor;
+
     @DataBoundConstructor
     public CukedoctorPublisher(String featuresDir, FormatType format, TocType toc, Boolean numbered, Boolean sectAnchors, String title, boolean hideFeaturesSection, boolean hideSummary,
                                boolean hideScenarioKeyword, boolean hideStepTime, boolean hideTags) {
@@ -110,6 +113,7 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         this.hideScenarioKeyword = hideScenarioKeyword;
         this.hideStepTime = hideStepTime;
         this.hideTags = hideTags;
+        cukedoctor = new CukedoctorMain();
     }
 
     @Override
@@ -163,34 +167,27 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
             logger.println("Found " + features.size() + " feature(s)...");
 
-
-            GlobalConfig globalConfig = GlobalConfig.getInstance();
-            DocumentAttributes documentAttributes = globalConfig.getDocumentAttributes().
+            final DocumentAttributes documentAttributes = GlobalConfig.getInstance().getDocumentAttributes().
                     backend(format.getFormat()).
                     toc(toc.getToc()).
                     numbered(numbered).
                     sectAnchors(sectAnchors).
                     docTitle(title);
 
-            globalConfig.getLayoutConfig().setHideFeaturesSection(hideFeaturesSection);
-
-            globalConfig.getLayoutConfig().setHideSummarySection(hideSummary);
-
-            globalConfig.getLayoutConfig().setHideScenarioKeyword(hideScenarioKeyword);
-
-            globalConfig.getLayoutConfig().setHideStepTime(hideStepTime);
-
-            globalConfig.getLayoutConfig().setHideTags(hideTags);
-
-            CukedoctorConfig cukedoctorConfig = new CukedoctorConfig()
+            final CukedoctorConfig cukedoctorConfig = new CukedoctorConfig()
                     .setIntroChapterDir(workspaceDocsDir.getRemote())
                     .setIntroChapterRelativePath(workspaceDocsDir.getRemote())
+                    .setHideFeaturesSection(hideFeaturesSection)
+                    .setHideSummarySection(hideSummary)
+                    .setHideScenarioKeyword(hideScenarioKeyword)
+                    .setHideStepTime(hideStepTime)
+                    .setHideTags(hideTags)
                     .setCustomizationDir(workspaceDocsDir.getRemote());
 
             String documentationLink = "";
             try {
-                String outputPath = docsDirectory.getAbsolutePath();
-                final ExecutorService pool = Executors.newFixedThreadPool(4);
+                final String outputPath = docsDirectory.getAbsolutePath() + "/documentation.adoc";
+                final ExecutorService pool = Executors.newFixedThreadPool(2);
                 documentationLink = "../" + build.getNumber() + "/" + CukedoctorBaseAction.BASE_URL + "/docs";
                 if ("all".equals(format.getFormat())) { //when format is 'all' send user to the list of documentation published by the job
                     pool.execute(runAll(features, documentAttributes, cukedoctorConfig, outputPath));
@@ -217,7 +214,6 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
         } else {
             logger.println(String.format("No features Found in %s. %sLiving documentation will not be generated.", workspaceJsonSourceDir.getRemote(), "\n"));
         }
-
         build.setResult(result);
     }
 
@@ -244,21 +240,15 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
      */
     private Runnable runAll(final List<Feature> features, final DocumentAttributes attrs, final CukedoctorConfig cukedoctorConfig, final String outputPath) {
         return () -> {
-            Asciidoctor asciidoctor = null;
             try {
-                asciidoctor = getAsciidoctor();
                 attrs.backend("html5");
-                generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
+                generateDocumentation(features, attrs, cukedoctorConfig, outputPath);
                 attrs.backend("pdf");
-                generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
+                generateDocumentation(features, attrs, cukedoctorConfig, outputPath);
             } catch (Exception e) {
                 e.printStackTrace();
                 final String errorMessage = String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause());
                 throw new RuntimeException(errorMessage);
-            } finally {
-                if (asciidoctor != null) {
-                    asciidoctor.shutdown();
-                }
             }
         };
 
@@ -266,48 +256,24 @@ public class CukedoctorPublisher extends Recorder implements SimpleBuildStep {
 
     private Runnable run(final List<Feature> features, final DocumentAttributes attrs, final CukedoctorConfig cukedoctorConfig, final String outputPath) {
         return () -> {
-            Asciidoctor asciidoctor = null;
             try {
-                asciidoctor = getAsciidoctor();
-                generateDocumentation(features, attrs, cukedoctorConfig, outputPath, asciidoctor);
+                generateDocumentation(features, attrs, cukedoctorConfig, outputPath);
             } catch (Exception e) {
                 e.printStackTrace();
                 final String errorMessage = String.format("Unexpected error on documentation generation, message %s, cause %s", e.getMessage(), e.getCause());
                 throw new RuntimeException(errorMessage);
-            } finally {
-                if (asciidoctor != null) {
-                    asciidoctor.shutdown();
-                }
             }
         };
 
     }
 
-    private Asciidoctor getAsciidoctor() {
-        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
-        Asciidoctor asciidoctor;
-        try {
-            ClassLoader classLoader = CukedoctorPublisher.class.getClassLoader();
-            Thread.currentThread().setContextClassLoader(classLoader);
-            asciidoctor = org.asciidoctor.jruby.AsciidoctorJRuby.Factory.create(classLoader);
-        } finally {
-            Thread.currentThread().setContextClassLoader(oldCl);
-        }
-        return asciidoctor;
-    }
-
-    protected synchronized void generateDocumentation(List<Feature> features, DocumentAttributes attrs, CukedoctorConfig cukedoctorConfig, String outputPath, Asciidoctor asciidoctor) {
-        ExtensionGroup cukedoctorExtensionGroup = asciidoctor.createGroup(CUKEDOCTOR_EXTENSION_GROUP_NAME);
+    protected synchronized void generateDocumentation(List<Feature> features, DocumentAttributes attrs, CukedoctorConfig cukedoctorConfig, String outputPath) {
         if (attrs.getBackend().equalsIgnoreCase("pdf")) {
-            cukedoctorExtensionGroup.unregister();
+            System.setProperty("cukedoctor.disable-extensions", "true");
+        } else {
+            System.clearProperty("cukedoctor.disable-extensions");
         }
-        CukedoctorConverter converter = Cukedoctor.instance(features, attrs, cukedoctorConfig);
-        String doc = converter.renderDocumentation();
-        File adocFile = FileUtil.saveFile(outputPath + "/documentation.adoc", doc);
-        asciidoctor.convertFile(adocFile, OptionsBuilder.options()
-                .backend(attrs.getBackend())
-                .attributes(attrs.toMap())
-                .safe(SafeMode.SAFE).asMap());
+        cukedoctor.execute(features, attrs, cukedoctorConfig, outputPath);
     }
 
     @Override
