@@ -46,4 +46,4 @@ workflow-multibranch:2.22
 workflow-scm-step:2.11
 workflow-step-api:2.22
 workflow-support:3.5
-cucumber-living-documentation:3.1
+cucumber-living-documentation:3.2
